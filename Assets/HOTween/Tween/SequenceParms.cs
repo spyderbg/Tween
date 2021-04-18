@@ -80,7 +80,7 @@ namespace Holoville.HOTween
         /// <param name="p_loops">
         /// Number of loops (set it to <c>-1</c> or <see cref="F:System.Single.PositiveInfinity" /> to apply infinite loops).
         /// </param>
-        public SequenceParms Loops(int p_loops) => Loops(p_loops, HOTween.defLoopType);
+        public SequenceParms Loops(int p_loops) => Loops(p_loops, HOTween.kDefLoopType);
 
         /// <summary>
         /// Sets the number of times the Sequence will run,

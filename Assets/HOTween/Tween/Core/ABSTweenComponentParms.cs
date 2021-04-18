@@ -15,16 +15,16 @@ namespace Holoville.HOTween.Core
         protected bool autoKillOnComplete = true;
 
         /// <summary>Update type.</summary>
-        protected UpdateType updateType = HOTween.defUpdateType;
+        protected UpdateType updateType = HOTween.kDefUpdateType;
 
         /// <summary>Time scale.</summary>
-        protected float timeScale = HOTween.defTimeScale;
+        protected float timeScale = HOTween.kDefTimeScale;
 
         /// <summary>Loops</summary>
         protected int loops = 1;
 
         /// <summary>Loop type.</summary>
-        protected LoopType loopType = HOTween.defLoopType;
+        protected LoopType loopType = HOTween.kDefLoopType;
 
         /// <summary>Paused.</summary>
         protected bool isPaused;
@@ -159,17 +159,17 @@ namespace Holoville.HOTween.Core
             p_owner.onComplete = onComplete;
             p_owner.onCompleteWParms = onCompleteWParms;
             p_owner.onCompleteParms = onCompleteParms;
-            p_owner.manageBehaviours = manageBehaviours;
-            p_owner.manageGameObjects = manageGameObjects;
-            p_owner.managedBehavioursOn = managedBehavioursOn;
-            p_owner.managedBehavioursOff = managedBehavioursOff;
-            p_owner.managedGameObjectsOn = managedGameObjectsOn;
-            p_owner.managedGameObjectsOff = managedGameObjectsOff;
+            p_owner.ManageBehaviours = manageBehaviours;
+            p_owner.ManageGameObjects = manageGameObjects;
+            p_owner.ManagedBehavioursOn = managedBehavioursOn;
+            p_owner.ManagedBehavioursOff = managedBehavioursOff;
+            p_owner.ManagedGameObjectsOn = managedGameObjectsOn;
+            p_owner.ManagedGameObjectsOff = managedGameObjectsOff;
             if (manageBehaviours)
             {
                 var length = (managedBehavioursOn != null ? managedBehavioursOn.Length : 0) +
                              (managedBehavioursOff != null ? managedBehavioursOff.Length : 0);
-                p_owner.managedBehavioursOriginalState = new bool[length];
+                p_owner.ManagedBehavioursOriginalState = new bool[length];
             }
 
             if (!manageGameObjects)

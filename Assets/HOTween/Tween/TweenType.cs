@@ -1,12 +1,13 @@
-﻿namespace Holoville.HOTween
+﻿namespace Holoville.HOTween {
+    
+/// <summary>Tween type</summary>
+public enum TweenType
 {
-    /// <summary>Tween type</summary>
-    public enum TweenType
-    {
-        /// <summary>Tween to value</summary>
-        To,
+    /// <summary>Tween to value</summary>
+    To,
 
-        /// <summary>Tween from value</summary>
-        From,
-    }
+    /// <summary>Tween from value</summary>
+    From,
+}
+
 }

@@ -6,7 +6,7 @@ namespace Holoville.HOTween.Editor {
 [CustomEditor(typeof(Object))]
 public class HOTweenDLLInspector : UnityEditor.Editor
 {
-    private const string kLibraryName = "HOTween";
+    private const string kLibraryName     = "HOTween";
     private const string kLibraryFullName = "HOTween.dll";
     
     private bool _stylesSet;

@@ -35,17 +35,23 @@ namespace Holoville.HOTween.Editor.Core
             StoreGUIStyles();
         }
 
-        public static GUIStyle Label(int size) => Label(size, FontStyle.Normal, Color.clear);
+        public static GUIStyle Label(int size) =>
+            Label(size, FontStyle.Normal, Color.clear);
 
-        public static GUIStyle Label(FontStyle fontStyle) => Label(-1, fontStyle, Color.clear);
+        public static GUIStyle Label(FontStyle fontStyle) =>
+            Label(-1, fontStyle, Color.clear);
 
-        public static GUIStyle Label(Color color) => Label(-1, FontStyle.Normal, color);
+        public static GUIStyle Label(Color color) =>
+            Label(-1, FontStyle.Normal, color);
 
-        public static GUIStyle Label(int size, FontStyle fontStyle) => Label(size, fontStyle, Color.clear);
+        public static GUIStyle Label(int size, FontStyle fontStyle) => 
+            Label(size, fontStyle, Color.clear);
 
-        public static GUIStyle Label(int size, Color color) => Label(size, FontStyle.Normal, color);
+        public static GUIStyle Label(int size, Color color) =>
+            Label(size, FontStyle.Normal, color);
 
-        public static GUIStyle Label(FontStyle fontStyle, Color color) => Label(-1, fontStyle, color);
+        public static GUIStyle Label(FontStyle fontStyle, Color color) =>
+            Label(-1, fontStyle, color);
 
         public static GUIStyle Label(int size, FontStyle fontStyle, Color color)
         {

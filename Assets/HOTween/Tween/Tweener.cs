@@ -13,10 +13,10 @@ namespace Holoville.HOTween
     public class Tweener : ABSTweenComponent
     {
         private float _elapsedDelay;
-        internal EaseType _easeType = HOTween.defEaseType;
+        internal EaseType _easeType = HOTween.kDefEaseType;
         internal AnimationCurve _easeAnimationCurve;
-        internal float _easeOvershootOrAmplitude = HOTween.defEaseOvershootOrAmplitude;
-        internal float _easePeriod = HOTween.defEasePeriod;
+        internal float _easeOvershootOrAmplitude = HOTween.kDefEaseOvershootOrAmplitude;
+        internal float _easePeriod = HOTween.kDefEasePeriod;
         internal bool _pixelPerfect;
         internal bool _speedBased;
         internal float _delay;
@@ -107,26 +107,26 @@ namespace Holoville.HOTween
         internal Tweener(object p_target, float p_duration, TweenParms p_parms)
         {
             _target = p_target;
-            _duration = p_duration;
+            Duration = p_duration;
             p_parms.InitializeObject(this, _target);
             if (plugins != null && plugins.Count > 0)
-                _isEmpty = false;
+                IsEmpty = false;
             SetFullDuration();
         }
 
         /// <summary>Kills this Tweener and cleans it.</summary>
-        /// <param name="p_autoRemoveFromHOTween">
+        /// <param name="autoRemoveFromHOTween">
         /// If <c>true</c> also calls <c>HOTween.Kill(this)</c> to remove it from HOTween.
         /// Set internally to <c>false</c> when I already know that HOTween is going to remove it.
         /// </param>
-        internal override void Kill(bool p_autoRemoveFromHOTween)
+        internal override void Kill(bool autoRemoveFromHOTween)
         {
-            if (_destroyed)
+            if (Destroyed)
                 return;
             if (HOTween.OverwriteManager != null)
                 HOTween.OverwriteManager.RemoveTween(this);
             plugins = null;
-            base.Kill(p_autoRemoveFromHOTween);
+            base.Kill(autoRemoveFromHOTween);
         }
 
         /// <summary>Resumes this Tweener.</summary>
@@ -179,7 +179,7 @@ namespace Holoville.HOTween
         /// </param>
         public void Restart(bool p_skipDelay)
         {
-            if (_fullElapsed == 0.0)
+            if (FullElapsed == 0.0)
                 PlayForward(p_skipDelay);
             else
                 Rewind(true, p_skipDelay);
@@ -190,15 +190,15 @@ namespace Holoville.HOTween
         /// Where a loop was involved, the Tweener completes at the position where it would actually be after the set number of loops.
         /// If there were infinite loops, this method will have no effect.
         /// </summary>
-        internal override void Complete(bool p_autoRemoveFromHOTween)
+        internal override void Complete(bool autoRemoveFromHOTween)
         {
             if (!_enabled || _loops < 0)
                 return;
-            _fullElapsed = float.IsPositiveInfinity(_fullDuration) ? _duration : _fullDuration;
+            FullElapsed = float.IsPositiveInfinity(FullDuration) ? Duration : FullDuration;
             Update(0.0f, true);
             if (!_autoKillOnComplete)
                 return;
-            Kill(p_autoRemoveFromHOTween);
+            Kill(autoRemoveFromHOTween);
         }
 
         /// <summary>
@@ -213,7 +213,7 @@ namespace Holoville.HOTween
             float p_newDuration,
             TweenParms p_newParms)
         {
-            if (_destroyed)
+            if (Destroyed)
             {
                 TweenWarning.Log(
                     "ResetAndChangeParms can't run because the tween was destroyed - set AutoKill or autoKillOnComplete to FALSE if you want to avoid destroying a tween after completion");
@@ -221,12 +221,12 @@ namespace Holoville.HOTween
             else
             {
                 Reset();
-                _duration = p_newDuration;
+                Duration = p_newDuration;
                 if (p_tweenType == TweenType.From)
                     p_newParms = p_newParms.IsFrom();
                 p_newParms.InitializeObject(this, _target);
                 if (plugins != null && plugins.Count > 0)
-                    _isEmpty = false;
+                    IsEmpty = false;
                 SetFullDuration();
             }
         }
@@ -244,10 +244,10 @@ namespace Holoville.HOTween
             _delay = _elapsedDelay = delayCount = 0.0f;
             _pixelPerfect = false;
             _speedBased = false;
-            _easeType = HOTween.defEaseType;
-            _easeOvershootOrAmplitude = HOTween.defEaseOvershootOrAmplitude;
-            _easePeriod = HOTween.defEasePeriod;
-            _originalEaseType = HOTween.defEaseType;
+            _easeType = HOTween.kDefEaseType;
+            _easeOvershootOrAmplitude = HOTween.kDefEaseOvershootOrAmplitude;
+            _easePeriod = HOTween.kDefEasePeriod;
+            _originalEaseType = HOTween.kDefEaseType;
             onPluginOverwritten = null;
             onStepCompleteWParms = null;
             onPluginOverwrittenParms = null;
@@ -258,20 +258,20 @@ namespace Holoville.HOTween
         /// overwriting any existing callbacks of the same type.
         /// </summary>
         protected override void ApplyCallback(
-            bool p_wParms,
-            CallbackType p_callbackType,
-            TweenDelegate.TweenCallback p_callback,
-            TweenDelegate.TweenCallbackWParms p_callbackWParms,
-            params object[] p_callbackParms)
+            bool wParms,
+            CallbackType callbackType,
+            TweenDelegate.TweenCallback callback,
+            TweenDelegate.TweenCallbackWParms callbackWParms,
+            params object[] callbackParms)
         {
-            if (p_callbackType == CallbackType.OnPluginOverwritten)
+            if (callbackType == CallbackType.OnPluginOverwritten)
             {
-                onPluginOverwritten = p_callback;
-                onPluginOverwrittenWParms = p_callbackWParms;
-                onPluginOverwrittenParms = p_callbackParms;
+                onPluginOverwritten = callback;
+                onPluginOverwrittenWParms = callbackWParms;
+                onPluginOverwrittenParms = callbackParms;
             }
             else
-                base.ApplyCallback(p_wParms, p_callbackType, p_callback, p_callbackWParms, p_callbackParms);
+                base.ApplyCallback(wParms, callbackType, callback, callbackWParms, callbackParms);
         }
 
         /// <summary>
@@ -279,10 +279,10 @@ namespace Holoville.HOTween
         /// Returns <c>false</c> both if the given target is not the same as this Tweener's, than if this Tweener is paused.
         /// This method is here to uniform <see cref="T:Holoville.HOTween.Tweener" /> with <see cref="T:Holoville.HOTween.Sequence" />.
         /// </summary>
-        /// <param name="p_target">The target to check.</param>
-        public override bool IsTweening(object p_target)
+        /// <param name="target">The target to check.</param>
+        public override bool IsTweening(object target)
         {
-            if (!_enabled || p_target != _target)
+            if (!_enabled || target != _target)
                 return false;
             return !isSequenced ? !_isPaused : !contSequence.isPaused;
         }
@@ -291,10 +291,10 @@ namespace Holoville.HOTween
         /// Returns <c>true</c> if the tween with the given string id is currently involved in a running tween or sequence.
         /// This method is here to uniform <see cref="T:Holoville.HOTween.Tweener" /> with <see cref="T:Holoville.HOTween.Sequence" />.
         /// </summary>
-        /// <param name="p_id">The id to check for.</param>
-        public override bool IsTweening(string p_id)
+        /// <param name="id">The id to check for.</param>
+        public override bool IsTweening(string id)
         {
-            if (!_enabled || !(id == p_id))
+            if (!_enabled || !(base.id == id))
                 return false;
             return !isSequenced ? !_isPaused : !contSequence.isPaused;
         }
@@ -303,10 +303,10 @@ namespace Holoville.HOTween
         /// Returns <c>true</c> if the tween with the given int id is currently involved in a running tween or sequence.
         /// This method is here to uniform <see cref="T:Holoville.HOTween.Tweener" /> with <see cref="T:Holoville.HOTween.Sequence" />.
         /// </summary>
-        /// <param name="p_id">The id to check for.</param>
-        public override bool IsTweening(int p_id)
+        /// <param name="id">The id to check for.</param>
+        public override bool IsTweening(int id)
         {
-            if (!_enabled || intId != p_id)
+            if (!_enabled || intId != id)
                 return false;
             return !isSequenced ? !_isPaused : !contSequence.isPaused;
         }
@@ -315,11 +315,11 @@ namespace Holoville.HOTween
         /// Returns <c>true</c> if the given target and this Tweener target are the same.
         /// This method is here to uniform <see cref="T:Holoville.HOTween.Tweener" /> with <see cref="T:Holoville.HOTween.Sequence" />.
         /// </summary>
-        /// <param name="p_target">The target to check.</param>
+        /// <param name="target">The target to check.</param>
         /// <returns>
         /// A value of <c>true</c> if the given target and this Tweener target are the same.
         /// </returns>
-        public override bool IsLinkedTo(object p_target) => p_target == _target;
+        public override bool IsLinkedTo(object target) => target == _target;
 
         /// <summary>Returns a list containing the target of this tween.</summary>
         /// <returns>A list containing the target of this tween.</returns>
@@ -332,10 +332,10 @@ namespace Holoville.HOTween
         /// Returns a list containing this tween if the id is the same as the given one
         /// (or and empty list if no tweens were found).
         /// </summary>
-        internal override List<IHOTweenComponent> GetTweensById(string p_id)
+        internal override List<IHOTweenComponent> GetTweensById(string id)
         {
             var hoTweenComponentList = new List<IHOTweenComponent>();
-            if (id == p_id)
+            if (base.id == id)
                 hoTweenComponentList.Add(this);
             return hoTweenComponentList;
         }
@@ -344,10 +344,10 @@ namespace Holoville.HOTween
         /// Returns a list containing this tween if the id is the same as the given one
         /// (or and empty list if no tweens were found).
         /// </summary>
-        internal override List<IHOTweenComponent> GetTweensByIntId(int p_intId)
+        internal override List<IHOTweenComponent> GetTweensByIntId(int intId)
         {
             var hoTweenComponentList = new List<IHOTweenComponent>();
-            if (intId == p_intId)
+            if (base.intId == intId)
                 hoTweenComponentList.Add(this);
             return hoTweenComponentList;
         }
@@ -476,7 +476,7 @@ namespace Holoville.HOTween
             if (!isPartialled)
             {
                 isPartialled = true;
-                _originalDuration = _duration;
+                OriginalDuration = Duration;
                 _originalEaseType = _easeType;
             }
 
@@ -484,9 +484,9 @@ namespace Holoville.HOTween
             var pathId2 = ConvertWaypointIdToPathId(pv3Path, p_waypointId1, false);
             var lengthPercentage = pv3Path.GetWaypointsLengthPercentage(pathId1, pathId2);
             var p_partialStartPerc = pathId1 == 0 ? 0.0f : pv3Path.GetWaypointsLengthPercentage(0, pathId1);
-            _duration = p_newDuration >= 0.0 ? p_newDuration : _originalDuration * lengthPercentage;
+            Duration = p_newDuration >= 0.0 ? p_newDuration : OriginalDuration * lengthPercentage;
             _easeType = p_newEaseType;
-            pv3Path.SwitchToPartialPath(_duration, p_newEaseType, p_partialStartPerc, lengthPercentage);
+            pv3Path.SwitchToPartialPath(Duration, p_newEaseType, p_partialStartPerc, lengthPercentage);
             Startup(true);
             if (!_isPaused)
                 Restart(true);
@@ -503,9 +503,9 @@ namespace Holoville.HOTween
         public void ResetPath()
         {
             isPartialled = false;
-            _duration = speedBased ? _originalNonSpeedBasedDuration : _originalDuration;
+            Duration = speedBased ? OriginalNonSpeedBasedDuration : OriginalDuration;
             _easeType = _originalEaseType;
-            pv3Path.ResetToFullPath(_duration, _easeType);
+            pv3Path.ResetToFullPath(Duration, _easeType);
             Startup(true);
             if (!_isPaused)
                 Restart(true);
@@ -533,30 +533,30 @@ namespace Holoville.HOTween
         }
 
         internal override bool Update(
-            float p_shortElapsed,
-            bool p_forceUpdate,
-            bool p_isStartupIteration,
-            bool p_ignoreCallbacks)
+            float shortElapsed,
+            bool forceUpdate,
+            bool isStartupIteration,
+            bool ignoreCallbacks)
         {
-            return Update(p_shortElapsed, p_forceUpdate, p_isStartupIteration, p_ignoreCallbacks, false);
+            return Update(shortElapsed, forceUpdate, isStartupIteration, ignoreCallbacks, false);
         }
 
         /// <summary>
         /// Updates the Tweener by the given elapsed time,
         /// and returns a value of <c>true</c> if the Tweener is complete.
         /// </summary>
-        /// <param name="p_shortElapsed">
+        /// <param name="shortElapsed">
         /// The elapsed time since the last update.
         /// </param>
-        /// <param name="p_forceUpdate">
+        /// <param name="forceUpdate">
         /// If <c>true</c> forces the update even if the Tweener is complete or paused,
         /// but ignores onUpdate, and sends onComplete and onStepComplete calls only if the Tweener wasn't complete before this call.
         /// </param>
-        /// <param name="p_isStartupIteration">
+        /// <param name="isStartupIteration">
         /// If <c>true</c> means the update is due to a startup iteration (managed by Sequence Startup or HOTween.From),
         /// and all callbacks will be ignored.
         /// </param>
-        /// <param name="p_ignoreCallbacks">
+        /// <param name="ignoreCallbacks">
         /// If <c>true</c> doesn't call any callback method.
         /// </param>
         /// <param name="p_ignoreDelay">
@@ -567,13 +567,13 @@ namespace Holoville.HOTween
         /// A value of <c>true</c> if the Tweener is not reversed and is complete (or the tween target doesn't exist anymore), otherwise <c>false</c>.
         /// </returns>
         internal bool Update(
-            float p_shortElapsed,
-            bool p_forceUpdate,
-            bool p_isStartupIteration,
-            bool p_ignoreCallbacks,
+            float shortElapsed,
+            bool forceUpdate,
+            bool isStartupIteration,
+            bool ignoreCallbacks,
             bool p_ignoreDelay = false)
         {
-            if (_destroyed)
+            if (Destroyed)
                 return true;
             if (_target == null || _target.Equals(null))
             {
@@ -583,71 +583,71 @@ namespace Holoville.HOTween
 
             if (!_enabled)
                 return false;
-            if (_isComplete && !_isReversed && !p_forceUpdate)
+            if (IsComplete && !IsReversed && !forceUpdate)
                 return true;
-            if (_fullElapsed == 0.0 && _isReversed && !p_forceUpdate || _isPaused && !p_forceUpdate)
+            if (FullElapsed == 0.0 && IsReversed && !forceUpdate || _isPaused && !forceUpdate)
                 return false;
-            ignoreCallbacks = p_isStartupIteration || p_ignoreCallbacks;
+            base.ignoreCallbacks = isStartupIteration || ignoreCallbacks;
             if (p_ignoreDelay || delayCount == 0.0)
             {
                 Startup();
-                if (!_hasStarted)
+                if (!HasStarted)
                     OnStart();
-                if (!_isReversed)
+                if (!IsReversed)
                 {
-                    _fullElapsed += p_shortElapsed;
-                    _elapsed += p_shortElapsed;
+                    FullElapsed += shortElapsed;
+                    Elapsed += shortElapsed;
                 }
                 else
                 {
-                    _fullElapsed -= p_shortElapsed;
-                    _elapsed -= p_shortElapsed;
+                    FullElapsed -= shortElapsed;
+                    Elapsed -= shortElapsed;
                 }
 
-                if (_fullElapsed > (double)_fullDuration)
-                    _fullElapsed = _fullDuration;
-                else if (_fullElapsed < 0.0)
-                    _fullElapsed = 0.0f;
+                if (FullElapsed > (double)FullDuration)
+                    FullElapsed = FullDuration;
+                else if (FullElapsed < 0.0)
+                    FullElapsed = 0.0f;
             }
             else
             {
                 if (_timeScale != 0.0)
-                    _elapsedDelay += p_shortElapsed / _timeScale;
+                    _elapsedDelay += shortElapsed / _timeScale;
                 if (_elapsedDelay < (double)delayCount)
                     return false;
-                if (_isReversed)
+                if (IsReversed)
                 {
-                    _fullElapsed = _elapsed = 0.0f;
+                    FullElapsed = Elapsed = 0.0f;
                 }
                 else
                 {
-                    _fullElapsed = _elapsed = _elapsedDelay - delayCount;
-                    if (_fullElapsed > (double)_fullDuration)
-                        _fullElapsed = _fullDuration;
+                    FullElapsed = Elapsed = _elapsedDelay - delayCount;
+                    if (FullElapsed > (double)FullDuration)
+                        FullElapsed = FullDuration;
                 }
 
                 _elapsedDelay = delayCount;
                 delayCount = 0.0f;
                 Startup();
-                if (!_hasStarted)
+                if (!HasStarted)
                     OnStart();
             }
 
-            var isComplete = _isComplete;
-            var flag1 = !_isReversed && !isComplete && _elapsed >= (double)_duration;
+            var isComplete = IsComplete;
+            var flag1 = !IsReversed && !isComplete && Elapsed >= (double)Duration;
             SetLoops();
             SetElapsed();
-            _isComplete = !_isReversed && _loops >= 0 && _completedLoops >= _loops;
-            var flag2 = !isComplete && _isComplete;
-            var p_totElapsed = !_isLoopingBack ? _elapsed : _duration - _elapsed;
+            IsComplete = !IsReversed && _loops >= 0 && CompletedLoops >= _loops;
+            var flag2 = !isComplete && IsComplete;
+            var p_totElapsed = !IsLoopingBack ? Elapsed : Duration - Elapsed;
             var count = plugins.Count;
             for (var index = 0; index < count; ++index)
             {
                 var plugin = plugins[index];
-                if (!_isLoopingBack && plugin.easeReversed ||
-                    _isLoopingBack && _loopType == LoopType.YoyoInverse && !plugin.easeReversed)
+                if (!IsLoopingBack && plugin.easeReversed ||
+                    IsLoopingBack && _loopType == LoopType.YoyoInverse && !plugin.easeReversed)
                     plugin.ReverseEase();
-                if (_duration > 0.0)
+                if (Duration > 0.0)
                 {
                     plugin.Update(p_totElapsed);
                     OnPluginUpdated(plugin);
@@ -661,10 +661,10 @@ namespace Holoville.HOTween
                 }
             }
 
-            if (_fullElapsed != (double)prevFullElapsed)
+            if (FullElapsed != (double)PrevFullElapsed)
             {
                 OnUpdate();
-                if (_fullElapsed == 0.0)
+                if (FullElapsed == 0.0)
                 {
                     if (!_isPaused)
                     {
@@ -689,8 +689,8 @@ namespace Holoville.HOTween
             else if (flag1)
                 OnStepComplete();
 
-            ignoreCallbacks = false;
-            prevFullElapsed = _fullElapsed;
+            base.ignoreCallbacks = false;
+            PrevFullElapsed = FullElapsed;
             return flag2;
         }
 
@@ -698,16 +698,16 @@ namespace Holoville.HOTween
         /// Sets the correct values in case of Incremental loop type.
         /// Also called by Tweener.ApplySequenceIncrement (used by Sequences during Incremental loops).
         /// </summary>
-        /// <param name="p_diffIncr">
+        /// <param name="diffIncr">
         /// The difference from the previous loop increment.
         /// </param>
-        internal override void SetIncremental(int p_diffIncr)
+        internal override void SetIncremental(int diffIncr)
         {
             if (plugins == null)
                 return;
             var count = plugins.Count;
             for (var index = 0; index < count; ++index)
-                plugins[index].ForceSetIncremental(p_diffIncr);
+                plugins[index].ForceSetIncremental(diffIncr);
         }
 
         /// <summary>
@@ -722,12 +722,12 @@ namespace Holoville.HOTween
             var count = plugins.Count;
             for (var index = 0; index < count; ++index)
                 plugins[index].ForceSetSpeedBasedDuration();
-            _duration = 0.0f;
+            Duration = 0.0f;
             for (var index = 0; index < count; ++index)
             {
                 var plugin = plugins[index];
-                if (plugin.duration > (double)_duration)
-                    _duration = plugin.duration;
+                if (plugin.duration > (double)Duration)
+                    Duration = plugin.duration;
             }
 
             SetFullDuration();
@@ -741,31 +741,31 @@ namespace Holoville.HOTween
         /// Returns <c>true</c> if the tween reached its end and was completed.
         /// </returns>
         protected override bool GoTo(
-            float p_time,
-            bool p_play,
-            bool p_forceUpdate,
-            bool p_ignoreCallbacks)
+            float time,
+            bool play,
+            bool forceUpdate,
+            bool ignoreCallbacks)
         {
             if (!_enabled)
                 return false;
-            if (p_time > (double)_fullDuration)
-                p_time = _fullDuration;
-            else if (p_time < 0.0)
-                p_time = 0.0f;
-            if (!p_forceUpdate && _fullElapsed == (double)p_time)
+            if (time > (double)FullDuration)
+                time = FullDuration;
+            else if (time < 0.0)
+                time = 0.0f;
+            if (!forceUpdate && FullElapsed == (double)time)
             {
-                if (!_isComplete && p_play)
+                if (!IsComplete && play)
                     Play();
-                return _isComplete;
+                return IsComplete;
             }
 
-            _fullElapsed = p_time;
+            FullElapsed = time;
             delayCount = 0.0f;
             _elapsedDelay = _delay;
-            Update(0.0f, true, false, p_ignoreCallbacks, false);
-            if (!_isComplete && p_play)
+            Update(0.0f, true, false, ignoreCallbacks, false);
+            if (!IsComplete && play)
                 Play();
-            return _isComplete;
+            return IsComplete;
         }
 
         private void Rewind(bool p_play, bool p_skipDelay)
@@ -773,14 +773,14 @@ namespace Holoville.HOTween
             if (!_enabled)
                 return;
             Startup();
-            if (!_hasStarted)
+            if (!HasStarted)
                 OnStart();
-            _isComplete = false;
-            _isLoopingBack = false;
+            IsComplete = false;
+            IsLoopingBack = false;
             delayCount = p_skipDelay ? 0.0f : _delay;
             _elapsedDelay = p_skipDelay ? _delay : 0.0f;
-            _completedLoops = 0;
-            _fullElapsed = _elapsed = 0.0f;
+            CompletedLoops = 0;
+            FullElapsed = Elapsed = 0.0f;
             var count = plugins.Count;
             for (var index = 0; index < count; ++index)
             {
@@ -790,14 +790,14 @@ namespace Holoville.HOTween
                 plugin.Rewind();
             }
 
-            if (_fullElapsed != (double)prevFullElapsed)
+            if (FullElapsed != (double)PrevFullElapsed)
             {
                 OnUpdate();
-                if (_fullElapsed == 0.0)
+                if (FullElapsed == 0.0)
                     OnRewinded();
             }
 
-            prevFullElapsed = _fullElapsed;
+            PrevFullElapsed = FullElapsed;
             if (p_play)
                 Play();
             else
@@ -810,7 +810,7 @@ namespace Holoville.HOTween
                 return;
             delayCount = 0.0f;
             _elapsedDelay = _delay;
-            _elapsed = _fullElapsed = 0.0f;
+            Elapsed = FullElapsed = 0.0f;
         }
 
         /// <summary>
@@ -834,19 +834,19 @@ namespace Holoville.HOTween
             for (var index = 0; index < count; ++index)
             {
                 var plugin = plugins[index];
-                if (!plugin.wasStarted)
+                if (!plugin.WasStarted)
                     plugin.Startup();
             }
 
             if (_speedBased)
             {
-                _originalNonSpeedBasedDuration = _duration;
-                _duration = 0.0f;
+                OriginalNonSpeedBasedDuration = Duration;
+                Duration = 0.0f;
                 for (var index = 0; index < count; ++index)
                 {
                     var plugin = plugins[index];
-                    if (plugin.duration > (double)_duration)
-                        _duration = plugin.duration;
+                    if (plugin.duration > (double)Duration)
+                        Duration = plugin.duration;
                 }
 
                 SetFullDuration();
@@ -878,13 +878,13 @@ namespace Holoville.HOTween
         /// Fills the given list with all the plugins inside this tween.
         /// Used by <c>HOTween.GetPlugins</c>.
         /// </summary>
-        internal override void FillPluginsList(List<ABSTweenPlugin> p_plugs)
+        internal override void FillPluginsList(List<ABSTweenPlugin> plugs)
         {
             if (plugins == null) return;
             
             var count = plugins.Count;
             for (var index = 0; index < count; ++index)
-                p_plugs.Add(plugins[index]);
+                plugs.Add(plugins[index]);
         }
 
         /// <summary>
@@ -901,8 +901,8 @@ namespace Holoville.HOTween
             bool p_isStartingWp)
         {
             return p_waypointId == -1
-                ? (!p_isStartingWp ? p_plugVector3Path.path.path.Length - 2 : 1)
-                : (p_plugVector3Path.hasAdditionalStartingP ? p_waypointId + 2 : p_waypointId + 1);
+                ? (!p_isStartingWp ? p_plugVector3Path.Path.path.Length - 2 : 1)
+                : (p_plugVector3Path.HasAdditionalStartingP ? p_waypointId + 2 : p_waypointId + 1);
         }
     }
 }

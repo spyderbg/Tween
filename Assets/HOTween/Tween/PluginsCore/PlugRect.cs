@@ -26,20 +26,20 @@ namespace Holoville.HOTween.Plugins.Core
         /// </summary>
         protected override object startVal
         {
-            get => _startVal;
+            get => StartVal;
             set
             {
-                if (tweenObj.isFrom && isRelative)
+                if (TweenObj.isFrom && IsRelative)
                 {
                     typedStartVal = (Rect)value;
                     typedStartVal.x += typedEndVal.x;
                     typedStartVal.y += typedEndVal.y;
                     typedStartVal.width += typedEndVal.width;
                     typedStartVal.height += typedEndVal.height;
-                    _startVal = typedStartVal;
+                    StartVal = typedStartVal;
                 }
                 else
-                    _startVal = typedStartVal = (Rect)value;
+                    StartVal = typedStartVal = (Rect)value;
             }
         }
 
@@ -49,85 +49,85 @@ namespace Holoville.HOTween.Plugins.Core
         /// </summary>
         protected override object endVal
         {
-            get => _endVal;
-            set => _endVal = typedEndVal = (Rect)value;
+            get => EndVal;
+            set => EndVal = typedEndVal = (Rect)value;
         }
 
         /// <summary>
         /// Creates a new instance of this plugin using the main ease type.
         /// </summary>
-        /// <param name="p_endVal">
+        /// <param name="endVal">
         /// The <see cref="T:UnityEngine.Rect" /> value to tween to.
         /// </param>
-        public PlugRect(Rect p_endVal)
-            : base(p_endVal, false)
+        public PlugRect(Rect endVal)
+            : base(endVal, false)
         {
         }
 
         /// <summary>Creates a new instance of this plugin.</summary>
-        /// <param name="p_endVal">
+        /// <param name="endVal">
         /// The <see cref="T:UnityEngine.Rect" /> value to tween to.
         /// </param>
-        /// <param name="p_easeType">
+        /// <param name="easeType">
         /// The <see cref="T:Holoville.HOTween.EaseType" /> to use.
         /// </param>
-        public PlugRect(Rect p_endVal, EaseType p_easeType)
-            : base(p_endVal, p_easeType, false)
+        public PlugRect(Rect endVal, EaseType easeType)
+            : base(endVal, easeType, false)
         {
         }
 
         /// <summary>
         /// Creates a new instance of this plugin using the main ease type.
         /// </summary>
-        /// <param name="p_endVal">
+        /// <param name="endVal">
         /// The <see cref="T:UnityEngine.Rect" /> value to tween to.
         /// </param>
-        /// <param name="p_isRelative">
+        /// <param name="isRelative">
         /// If <c>true</c>, the given end value is considered relative instead than absolute.
         /// </param>
-        public PlugRect(Rect p_endVal, bool p_isRelative)
-            : base(p_endVal, p_isRelative)
+        public PlugRect(Rect endVal, bool isRelative)
+            : base(endVal, isRelative)
         {
         }
 
         /// <summary>Creates a new instance of this plugin.</summary>
-        /// <param name="p_endVal">
+        /// <param name="endVal">
         /// The <see cref="T:UnityEngine.Rect" /> value to tween to.
         /// </param>
-        /// <param name="p_easeType">
+        /// <param name="easeType">
         /// The <see cref="T:Holoville.HOTween.EaseType" /> to use.
         /// </param>
-        /// <param name="p_isRelative">
+        /// <param name="isRelative">
         /// If <c>true</c>, the given end value is considered relative instead than absolute.
         /// </param>
-        public PlugRect(Rect p_endVal, EaseType p_easeType, bool p_isRelative)
-            : base(p_endVal, p_easeType, p_isRelative)
+        public PlugRect(Rect endVal, EaseType easeType, bool isRelative)
+            : base(endVal, easeType, isRelative)
         {
         }
 
         /// <summary>Creates a new instance of this plugin.</summary>
-        /// <param name="p_endVal">
+        /// <param name="endVal">
         /// The <see cref="T:UnityEngine.Rect" /> value to tween to.
         /// </param>
-        /// <param name="p_easeAnimCurve">
+        /// <param name="easeAnimCurve">
         /// The <see cref="T:UnityEngine.AnimationCurve" /> to use for easing.
         /// </param>
-        /// <param name="p_isRelative">
+        /// <param name="isRelative">
         /// If <c>true</c>, the given end value is considered relative instead than absolute.
         /// </param>
-        public PlugRect(Rect p_endVal, AnimationCurve p_easeAnimCurve, bool p_isRelative)
-            : base(p_endVal, p_easeAnimCurve, p_isRelative)
+        public PlugRect(Rect endVal, AnimationCurve easeAnimCurve, bool isRelative)
+            : base(endVal, easeAnimCurve, isRelative)
         {
         }
 
         /// <summary>
         /// Returns the speed-based duration based on the given speed x second.
         /// </summary>
-        protected override float GetSpeedBasedDuration(float p_speed)
+        protected override float GetSpeedBasedDuration(float speed)
         {
             var num1 = typedEndVal.width - typedStartVal.width;
             var num2 = typedEndVal.height - typedStartVal.height;
-            var num3 = (float)Math.Sqrt(num1 * (double)num1 + num2 * (double)num2) / p_speed;
+            var num3 = (float)Math.Sqrt(num1 * (double)num1 + num2 * (double)num2) / speed;
             if (num3 < 0.0)
                 num3 = -num3;
             return num3;
@@ -138,7 +138,7 @@ namespace Holoville.HOTween.Plugins.Core
         /// </summary>
         protected override void SetChangeVal()
         {
-            if (isRelative && !tweenObj.isFrom)
+            if (IsRelative && !TweenObj.isFrom)
             {
                 typedEndVal.x += typedStartVal.x;
                 typedEndVal.y += typedStartVal.y;
@@ -156,16 +156,16 @@ namespace Holoville.HOTween.Plugins.Core
         /// <summary>
         /// Sets the correct values in case of Incremental loop type.
         /// </summary>
-        /// <param name="p_diffIncr">
+        /// <param name="diffIncr">
         /// The difference from the previous loop increment.
         /// </param>
-        protected override void SetIncremental(int p_diffIncr)
+        protected override void SetIncremental(int diffIncr)
         {
             var rect = new Rect(diffChangeVal.x, diffChangeVal.y, diffChangeVal.width, diffChangeVal.height);
-            rect.x *= p_diffIncr;
-            rect.y *= p_diffIncr;
-            rect.width *= p_diffIncr;
-            rect.height *= p_diffIncr;
+            rect.x *= diffIncr;
+            rect.y *= diffIncr;
+            rect.width *= diffIncr;
+            rect.height *= diffIncr;
             typedStartVal.x += rect.x;
             typedStartVal.y += rect.y;
             typedStartVal.width += rect.width;
@@ -177,10 +177,10 @@ namespace Holoville.HOTween.Plugins.Core
         }
 
         /// <summary>Updates the tween.</summary>
-        /// <param name="p_totElapsed">The total elapsed time since startup.</param>
-        protected override void DoUpdate(float p_totElapsed)
+        /// <param name="totElapsed">The total elapsed time since startup.</param>
+        protected override void DoUpdate(float totElapsed)
         {
-            var num = ease(p_totElapsed, 0.0f, 1f, _duration, tweenObj.easeOvershootOrAmplitude, tweenObj.easePeriod);
+            var num = Ease(totElapsed, 0.0f, 1f, Duration, TweenObj.easeOvershootOrAmplitude, TweenObj.easePeriod);
             SetValue(new Rect()
             {
                 x = (typedStartVal.x + diffChangeVal.x * num),

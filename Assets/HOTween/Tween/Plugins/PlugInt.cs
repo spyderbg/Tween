@@ -2,157 +2,91 @@
 using System;
 using UnityEngine;
 
-namespace Holoville.HOTween.Plugins
+namespace Holoville.HOTween.Plugins {
+
+public class PlugInt : ABSTweenPlugin
 {
-    /// <summary>
-    /// Plugin for the tweening of number values only through integers.
-    /// </summary>
-    public class PlugInt : ABSTweenPlugin
+    internal static Type[] ValidPropTypes = new Type[2]
     {
-        internal static Type[] validPropTypes = new Type[2]
-        {
-            typeof(float),
-            typeof(int)
-        };
+        typeof(float),
+        typeof(int)
+    };
 
-        internal static Type[] validValueTypes = new Type[1]
-        {
-            typeof(int)
-        };
+    internal static Type[] validValueTypes = new Type[1]
+    {
+        typeof(int)
+    };
 
-        private float typedStartVal;
-        private float typedEndVal;
-        private float changeVal;
+    private float _typedStartVal;
+    private float _typedEndVal;
+    private float _changeVal;
 
-        /// <summary>
-        /// Gets the untyped start value,
-        /// sets both the untyped and the typed start value.
-        /// </summary>
-        protected override object startVal
+    protected override object startVal
+    {
+        get => StartVal;
+        set
         {
-            get => _startVal;
-            set
-            {
-                if (tweenObj.isFrom && isRelative)
-                    _startVal = typedStartVal = typedEndVal + Convert.ToSingle(value);
-                else
-                    _startVal = typedStartVal = Convert.ToSingle(value);
-            }
-        }
-
-        /// <summary>
-        /// Gets the untyped end value,
-        /// sets both the untyped and the typed end value.
-        /// </summary>
-        protected override object endVal
-        {
-            get => _endVal;
-            set => _endVal = typedEndVal = Convert.ToSingle(value);
-        }
-
-        /// <summary>
-        /// Creates a new instance of this plugin using the main ease type.
-        /// </summary>
-        /// <param name="p_endVal">
-        /// The <see cref="T:System.Single" /> value to tween to.
-        /// </param>
-        public PlugInt(float p_endVal)
-            : base(p_endVal, false)
-        {
-        }
-
-        /// <summary>Creates a new instance of this plugin.</summary>
-        /// <param name="p_endVal">
-        /// The <see cref="T:System.Single" /> value to tween to.
-        /// </param>
-        /// <param name="p_easeType">
-        /// The <see cref="T:Holoville.HOTween.EaseType" /> to use.
-        /// </param>
-        public PlugInt(float p_endVal, EaseType p_easeType)
-            : base(p_endVal, p_easeType, false)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new instance of this plugin using the main ease type.
-        /// </summary>
-        /// <param name="p_endVal">
-        /// The <see cref="T:System.Single" /> value to tween to.
-        /// </param>
-        /// <param name="p_isRelative">
-        /// If <c>true</c>, the given end value is considered relative instead than absolute.
-        /// </param>
-        public PlugInt(float p_endVal, bool p_isRelative)
-            : base(p_endVal, p_isRelative)
-        {
-        }
-
-        /// <summary>Creates a new instance of this plugin.</summary>
-        /// <param name="p_endVal">
-        /// The <see cref="T:System.Single" /> value to tween to.
-        /// </param>
-        /// <param name="p_easeType">
-        /// The <see cref="T:Holoville.HOTween.EaseType" /> to use.
-        /// </param>
-        /// <param name="p_isRelative">
-        /// If <c>true</c>, the given end value is considered relative instead than absolute.
-        /// </param>
-        public PlugInt(float p_endVal, EaseType p_easeType, bool p_isRelative)
-            : base(p_endVal, p_easeType, p_isRelative)
-        {
-        }
-
-        /// <summary>Creates a new instance of this plugin.</summary>
-        /// <param name="p_endVal">
-        /// The <see cref="T:System.Single" /> value to tween to.
-        /// </param>
-        /// <param name="p_easeAnimCurve">
-        /// The <see cref="T:UnityEngine.AnimationCurve" /> to use for easing.
-        /// </param>
-        /// <param name="p_isRelative">
-        /// If <c>true</c>, the given end value is considered relative instead than absolute.
-        /// </param>
-        public PlugInt(float p_endVal, AnimationCurve p_easeAnimCurve, bool p_isRelative)
-            : base(p_endVal, p_easeAnimCurve, p_isRelative)
-        {
-        }
-
-        /// <summary>
-        /// Returns the speed-based duration based on the given speed x second.
-        /// </summary>
-        protected override float GetSpeedBasedDuration(float p_speed)
-        {
-            var num = changeVal / p_speed;
-            if (num < 0.0)
-                num = -num;
-            return num;
-        }
-
-        /// <summary>
-        /// Sets the typed changeVal based on the current startVal and endVal.
-        /// </summary>
-        protected override void SetChangeVal()
-        {
-            if (isRelative && !tweenObj.isFrom)
-            {
-                changeVal = typedEndVal;
-                endVal = (float)(typedStartVal + (double)typedEndVal);
-            }
+            if (TweenObj.isFrom && IsRelative)
+                StartVal = _typedStartVal = _typedEndVal + Convert.ToSingle(value);
             else
-                changeVal = typedEndVal - typedStartVal;
+                StartVal = _typedStartVal = Convert.ToSingle(value);
         }
-
-        /// <summary>
-        /// Sets the correct values in case of Incremental loop type.
-        /// </summary>
-        /// <param name="p_diffIncr">
-        /// The difference from the previous loop increment.
-        /// </param>
-        protected override void SetIncremental(int p_diffIncr) => typedStartVal += changeVal * p_diffIncr;
-
-        /// <summary>Updates the tween.</summary>
-        /// <param name="p_totElapsed">The total elapsed time since startup.</param>
-        protected override void DoUpdate(float p_totElapsed) => SetValue((float)Math.Round(ease(p_totElapsed,
-            typedStartVal, changeVal, _duration, tweenObj.easeOvershootOrAmplitude, tweenObj.easePeriod)));
     }
+
+    protected override object endVal
+    {
+        get => EndVal;
+        set => EndVal = _typedEndVal = Convert.ToSingle(value);
+    }
+
+    public PlugInt(float endVal)
+        : base(endVal, false)
+    {
+    }
+
+    public PlugInt(float endVal, EaseType easeType)
+        : base(endVal, easeType, false)
+    {
+    }
+
+    public PlugInt(float endVal, bool isRelative)
+        : base(endVal, isRelative)
+    {
+    }
+
+    public PlugInt(float endVal, EaseType easeType, bool isRelative)
+        : base(endVal, easeType, isRelative)
+    {
+    }
+
+    public PlugInt(float endVal, AnimationCurve easeAnimCurve, bool isRelative)
+        : base(endVal, easeAnimCurve, isRelative)
+    {
+    }
+
+    protected override float GetSpeedBasedDuration(float speed)
+    {
+        var num = _changeVal / speed;
+        if (num < 0.0)
+            num = -num;
+        return num;
+    }
+
+    protected override void SetChangeVal()
+    {
+        if (IsRelative && !TweenObj.isFrom)
+        {
+            _changeVal = _typedEndVal;
+            endVal = (float)(_typedStartVal + (double)_typedEndVal);
+        }
+        else
+            _changeVal = _typedEndVal - _typedStartVal;
+    }
+
+    protected override void SetIncremental(int diffIncr) => _typedStartVal += _changeVal * diffIncr;
+
+    protected override void DoUpdate(float totElapsed) => SetValue((float)Math.Round(Ease(totElapsed,
+        _typedStartVal, _changeVal, Duration, TweenObj.easeOvershootOrAmplitude, TweenObj.easePeriod)));
+}
+
 }

@@ -5,532 +5,352 @@ using System;
 using System.Reflection;
 using UnityEngine;
 
-namespace Holoville.HOTween.Plugins.Core
+namespace Holoville.HOTween.Plugins.Core {
+
+public abstract class ABSTweenPlugin
 {
-    /// <summary>
-    /// ABSTRACT base class for all <see cref="T:Holoville.HOTween.Plugins.Core.ABSTweenPlugin" /> classes.
-    /// </summary>
-    public abstract class ABSTweenPlugin
+    protected object StartVal;
+
+    protected object EndVal;
+
+    protected float Duration;
+
+    private bool _initialized;
+    private bool _easeReversed;
+
+    protected string PropName;
+
+    internal Type TargetType;
+
+    protected TweenDelegate.EaseFunc Ease;
+
+    protected bool IsRelative;
+
+    protected bool IgnoreAccessor;
+
+    private EaseType _easeType;
+    private EaseInfo _easeInfo;
+    private EaseCurve _easeCurve;
+    private IMemberAccessor _valAccessor;
+    internal bool WasStarted;
+    private bool _speedBasedDurationWasSet;
+    private int _prevCompletedLoops;
+    private bool _useSpeedTransformAccessors;
+    private Transform _transformTarget;
+    private TweenDelegate.HOAction<Vector3> _setTransformVector3;
+    private TweenDelegate.HOFunc<Vector3> _getTransformVector3;
+    private TweenDelegate.HOAction<Quaternion> _setTransformQuaternion;
+    private TweenDelegate.HOFunc<Quaternion> _getTransformQuaternion;
+    private PropertyInfo _propInfo;
+    private FieldInfo _fieldInfo;
+
+    protected Tweener TweenObj;
+
+    protected abstract object startVal { get; set; }
+
+    protected abstract object endVal { get; set; }
+
+    internal bool initialized => _initialized;
+
+    internal float duration => Duration;
+
+    internal bool easeReversed => _easeReversed;
+
+    internal string propName => PropName;
+
+    internal virtual int pluginId => -1;
+
+    protected ABSTweenPlugin(object endVal, bool isRelative)
     {
-        /// <summary>Untyped start value.</summary>
-        protected object _startVal;
+        IsRelative = isRelative;
+        EndVal = endVal;
+    }
 
-        /// <summary>Untyped end value.</summary>
-        protected object _endVal;
+    protected ABSTweenPlugin(object endVal, EaseType easeType, bool isRelative)
+    {
+        IsRelative = isRelative;
+        EndVal = endVal;
+        _easeType = easeType;
+        _easeInfo = EaseInfo.GetEaseInfo(easeType);
+        Ease = _easeInfo.Ease;
+    }
 
-        /// <summary>
-        /// Stored so it can be set indipendently in case of speed-based tweens.
-        /// </summary>
-        protected float _duration;
+    protected ABSTweenPlugin(object endVal, AnimationCurve easeAnimCurve, bool isRelative)
+    {
+        IsRelative = isRelative;
+        EndVal = endVal;
+        _easeType = EaseType.AnimationCurve;
+        _easeCurve = new EaseCurve(easeAnimCurve);
+        _easeInfo = null;
+        Ease = new TweenDelegate.EaseFunc(_easeCurve.Evaluate);
+    }
 
-        private bool _initialized;
-        private bool _easeReversed;
-
-        /// <summary>
-        /// Name of the property being tweened. Stored during Init, used by overwrite manager and log messages.
-        /// </summary>
-        protected string _propName;
-
-        /// <summary>
-        /// Stored to be used during recreation of plugin for partial tweens.
-        /// </summary>
-        internal Type targetType;
-
-        /// <summary>Ease type.</summary>
-        protected TweenDelegate.EaseFunc ease;
-
-        /// <summary>
-        /// Indicates that the end value is relative instead than absolute.
-        /// Default: <c>false</c>.
-        /// </summary>
-        protected bool isRelative;
-
-        /// <summary>
-        /// Some plugins (like PlugSetColor) may set this to <c>false</c> when instantiated,
-        /// to prevent the creation of a useless valAccessor.
-        /// </summary>
-        protected bool ignoreAccessor;
-
-        private EaseType easeType;
-        private EaseInfo easeInfo;
-        private EaseCurve easeCurve;
-        private IMemberAccessor valAccessor;
-        internal bool wasStarted;
-        private bool speedBasedDurationWasSet;
-        private int prevCompletedLoops;
-        private bool _useSpeedTransformAccessors;
-        private Transform _transformTarget;
-        private TweenDelegate.HOAction<Vector3> _setTransformVector3;
-        private TweenDelegate.HOFunc<Vector3> _getTransformVector3;
-        private TweenDelegate.HOAction<Quaternion> _setTransformQuaternion;
-        private TweenDelegate.HOFunc<Quaternion> _getTransformQuaternion;
-        internal PropertyInfo propInfo;
-        internal FieldInfo fieldInfo;
-
-        /// <summary>Reference to the Tweener controlling this plugin.</summary>
-        protected Tweener tweenObj;
-
-        /// <summary>
-        /// Gets the untyped start value,
-        /// sets both the untyped and the typed start value.
-        /// </summary>
-        protected abstract object startVal { get; set; }
-
-        /// <summary>
-        /// Gets the untyped end value,
-        /// sets both the untyped and the typed end value.
-        /// </summary>
-        protected abstract object endVal { get; set; }
-
-        /// <summary>
-        /// Used by TweenParms to understand if this plugin was initialized with
-        /// another Tweener, and thus clone it.
-        /// </summary>
-        internal bool initialized => _initialized;
-
-        internal float duration => _duration;
-
-        internal bool easeReversed => _easeReversed;
-
-        /// <summary>
-        /// Used by <see cref="T:Holoville.HOTween.Core.OverwriteManager" /> to get the property name.
-        /// </summary>
-        internal string propName => _propName;
-
-        /// <summary>
-        /// Some plugins might override this to specify a different ID (like PlugVector3X).
-        /// Used by <see cref="T:Holoville.HOTween.Core.OverwriteManager" /> to check if two plugins are the same (for overwrite purposes).
-        /// Plugins with -1 ids always overwrite and are overwritten.
-        /// Plugins with different ids are always overwritten by plugins with -1 ids,
-        /// but overwrite only identical ids.
-        /// </summary>
-        /// <value>The plugin identifier.</value>
-        internal virtual int pluginId => -1;
-
-        /// <summary>
-        /// Creates a new instance of this plugin with the given options.
-        /// Used because easeType can't be null, and otherwise there's no way
-        /// to understand if the ease was voluntarily set by the user or not.
-        /// </summary>
-        /// <param name="p_endVal">
-        /// The <see cref="T:System.Object" /> value to tween to.
-        /// </param>
-        /// <param name="p_isRelative">
-        /// If <c>true</c>, the given end value is considered relative instead than absolute.
-        /// </param>
-        protected ABSTweenPlugin(object p_endVal, bool p_isRelative)
+    internal virtual void Init(Tweener tweenObj, string propertyName, EaseType easeType, Type targetType, PropertyInfo propertyInfo, FieldInfo fieldInfo)
+    {
+        _initialized = true;
+        TweenObj = tweenObj;
+        PropName = propertyName;
+        TargetType = targetType;
+        if (_easeType != EaseType.AnimationCurve && _easeInfo == null || TweenObj.speedBased ||
+            _easeType == EaseType.AnimationCurve && _easeCurve == null)
+            SetEase(easeType);
+        Duration = TweenObj.Duration;
+        if (TargetType == typeof(Transform))
         {
-            isRelative = p_isRelative;
-            _endVal = p_endVal;
-        }
-
-        /// <summary>
-        /// Creates a new instance of this plugin with the given options.
-        /// </summary>
-        /// <param name="p_endVal">
-        /// The <see cref="T:System.Object" /> value to tween to.
-        /// </param>
-        /// <param name="p_easeType">
-        /// The <see cref="T:Holoville.HOTween.EaseType" /> to use.
-        /// </param>
-        /// <param name="p_isRelative">
-        /// If <c>true</c>, the given end value is considered relative instead than absolute.
-        /// </param>
-        protected ABSTweenPlugin(object p_endVal, EaseType p_easeType, bool p_isRelative)
-        {
-            isRelative = p_isRelative;
-            _endVal = p_endVal;
-            easeType = p_easeType;
-            easeInfo = EaseInfo.GetEaseInfo(p_easeType);
-            ease = easeInfo.ease;
-        }
-
-        /// <summary>
-        /// Creates a new instance of this plugin with the given options.
-        /// </summary>
-        /// <param name="p_endVal">
-        /// The <see cref="T:System.Object" /> value to tween to.
-        /// </param>
-        /// <param name="p_easeAnimCurve">
-        /// The <see cref="T:UnityEngine.AnimationCurve" /> to use for easing.
-        /// </param>
-        /// <param name="p_isRelative">
-        /// If <c>true</c>, the given end value is considered relative instead than absolute.
-        /// </param>
-        protected ABSTweenPlugin(object p_endVal, AnimationCurve p_easeAnimCurve, bool p_isRelative)
-        {
-            isRelative = p_isRelative;
-            _endVal = p_endVal;
-            easeType = EaseType.AnimationCurve;
-            easeCurve = new EaseCurve(p_easeAnimCurve);
-            easeInfo = null;
-            ease = new TweenDelegate.EaseFunc(easeCurve.Evaluate);
-        }
-
-        /// <summary>
-        /// Initializes the plugin after its instantiation.
-        /// Called by Tweener after a property and plugin have been validated, and the plugin has to be set and added.
-        /// Virtual because some classes (like PlugVector3Path) override it to avoid isRelative being TRUE.
-        /// </summary>
-        /// <param name="p_tweenObj">
-        /// The <see cref="T:Holoville.HOTween.Tweener" /> to refer to.
-        /// </param>
-        /// <param name="p_propertyName">
-        /// The name of the property to control.
-        /// </param>
-        /// <param name="p_easeType">
-        /// The <see cref="T:Holoville.HOTween.EaseType" /> to use.
-        /// </param>
-        /// <param name="p_targetType">
-        /// Directly passed from TweenParms to speed up MemberAccessor creation.
-        /// </param>
-        /// <param name="p_propertyInfo">
-        /// Directly passed from TweenParms to speed up MemberAccessor creation.
-        /// </param>
-        /// <param name="p_fieldInfo">
-        /// Directly passed from TweenParms to speed up MemberAccessor creation.
-        /// </param>
-        internal virtual void Init(
-            Tweener p_tweenObj,
-            string p_propertyName,
-            EaseType p_easeType,
-            Type p_targetType,
-            PropertyInfo p_propertyInfo,
-            FieldInfo p_fieldInfo)
-        {
-            _initialized = true;
-            tweenObj = p_tweenObj;
-            _propName = p_propertyName;
-            targetType = p_targetType;
-            if (easeType != EaseType.AnimationCurve && easeInfo == null || tweenObj.speedBased ||
-                easeType == EaseType.AnimationCurve && easeCurve == null)
-                SetEase(p_easeType);
-            _duration = tweenObj.duration;
-            if (targetType == typeof(Transform))
+            _transformTarget = tweenObj.target as Transform;
+            _useSpeedTransformAccessors = true;
+            switch (PropName)
             {
-                _transformTarget = p_tweenObj.target as Transform;
-                _useSpeedTransformAccessors = true;
-                switch (_propName)
-                {
-                    case "position":
-                        _setTransformVector3 = value => _transformTarget.position = value;
-                        _getTransformVector3 = () => _transformTarget.position;
-                        break;
-                    case "localPosition":
-                        _setTransformVector3 = value => _transformTarget.localPosition = value;
-                        _getTransformVector3 = () => _transformTarget.localPosition;
-                        break;
-                    case "localScale":
-                        _setTransformVector3 = value => _transformTarget.localScale = value;
-                        _getTransformVector3 = () => _transformTarget.localScale;
-                        break;
-                    case "rotation":
-                        _setTransformQuaternion = value => _transformTarget.rotation = value;
-                        _getTransformQuaternion = () => _transformTarget.rotation;
-                        break;
-                    case "localRotation":
-                        _setTransformQuaternion = value => _transformTarget.localRotation = value;
-                        _getTransformQuaternion = () => _transformTarget.localRotation;
-                        break;
-                    default:
-                        _transformTarget = null;
-                        _useSpeedTransformAccessors = false;
-                        break;
-                }
+                case "position":
+                    _setTransformVector3 = value => _transformTarget.position = value;
+                    _getTransformVector3 = () => _transformTarget.position;
+                    break;
+                case "localPosition":
+                    _setTransformVector3 = value => _transformTarget.localPosition = value;
+                    _getTransformVector3 = () => _transformTarget.localPosition;
+                    break;
+                case "localScale":
+                    _setTransformVector3 = value => _transformTarget.localScale = value;
+                    _getTransformVector3 = () => _transformTarget.localScale;
+                    break;
+                case "rotation":
+                    _setTransformQuaternion = value => _transformTarget.rotation = value;
+                    _getTransformQuaternion = () => _transformTarget.rotation;
+                    break;
+                case "localRotation":
+                    _setTransformQuaternion = value => _transformTarget.localRotation = value;
+                    _getTransformQuaternion = () => _transformTarget.localRotation;
+                    break;
+                default:
+                    _transformTarget = null;
+                    _useSpeedTransformAccessors = false;
+                    break;
             }
+        }
 
-            if (_useSpeedTransformAccessors)
+        if (_useSpeedTransformAccessors)
+            return;
+        if (HOTween.IsIOS)
+        {
+            _propInfo = propertyInfo;
+            _fieldInfo = fieldInfo;
+        }
+        else
+        {
+            if (IgnoreAccessor)
                 return;
-            if (HOTween.IsIOS)
-            {
-                propInfo = p_propertyInfo;
-                fieldInfo = p_fieldInfo;
-            }
-            else
-            {
-                if (ignoreAccessor)
-                    return;
-                valAccessor = MemberAccessorCacher.Make(p_targetType, p_propertyName, p_propertyInfo, p_fieldInfo);
-            }
+            _valAccessor = MemberAccessorCacher.Make(targetType, propertyName, propertyInfo, fieldInfo);
         }
+    }
 
-        /// <summary>
-        /// Starts up the plugin, getting the actual start and change values.
-        /// Called by Tweener right before starting the effective animations.
-        /// </summary>
-        internal void Startup() => Startup(false);
+    internal void Startup() => Startup(false);
 
-        /// <summary>
-        /// Starts up the plugin, getting the actual start and change values.
-        /// Called by Tweener right before starting the effective animations.
-        /// </summary>
-        /// <param name="p_onlyCalcSpeedBasedDur">
-        /// Set to <c>true</c> by <see cref="M:Holoville.HOTween.Plugins.Core.ABSTweenPlugin.ForceSetSpeedBasedDuration" />,
-        /// to calculate only the speed based duration and then reset any startup changes
-        /// (so Startup can be called from scratch when truly starting up).
-        /// </param>
-        internal void Startup(bool p_onlyCalcSpeedBasedDur)
+    internal void Startup(bool onlyCalcSpeedBasedDur)
+    {
+        if (WasStarted)
         {
-            if (wasStarted)
-            {
-                TweenWarning.Log("Startup() for plugin " + this + " (target: " + tweenObj.target +
-                                 ") has already been called. Startup() won't execute twice.");
-            }
-            else
-            {
-                object obj1 = null;
-                object obj2 = null;
-                if (p_onlyCalcSpeedBasedDur)
-                {
-                    if (tweenObj.speedBased && !speedBasedDurationWasSet)
-                    {
-                        obj1 = _startVal;
-                        obj2 = _endVal;
-                    }
-                }
-                else
-                    wasStarted = true;
-
-                if (tweenObj.isFrom)
-                {
-                    var endVal = _endVal;
-                    this.endVal = GetValue();
-                    startVal = endVal;
-                }
-                else
-                {
-                    endVal = _endVal;
-                    startVal = GetValue();
-                }
-
-                SetChangeVal();
-                if (!tweenObj.speedBased || speedBasedDurationWasSet)
-                    return;
-                _duration = GetSpeedBasedDuration(_duration);
-                speedBasedDurationWasSet = true;
-                if (!p_onlyCalcSpeedBasedDur)
-                    return;
-                _startVal = obj1;
-                _endVal = obj2;
-            }
+            TweenWarning.Log("Startup() for plugin " + this + " (target: " + TweenObj.target +
+                             ") has already been called. Startup() won't execute twice.");
         }
-
-        /// <summary>
-        /// If speed based duration was not already set (meaning Startup has not yet been called),
-        /// calculates the duration and then resets the plugin so that Startup will restart from scratch.
-        /// Used by <see cref="M:Holoville.HOTween.Tweener.ForceSetSpeedBasedDuration" />.
-        /// </summary>
-        internal void ForceSetSpeedBasedDuration()
+        else
         {
-            if (speedBasedDurationWasSet)
-                return;
-            Startup(true);
-        }
-
-        /// <summary>
-        /// Overridden by plugins that need a specific type of target, to check it and validate it.
-        /// Returns <c>true</c> if the tween target is valid.
-        /// </summary>
-        internal virtual bool ValidateTarget(object p_target) => true;
-
-        /// <summary>Updates the tween.</summary>
-        /// <param name="p_totElapsed">
-        /// The total elapsed time since startup (loops excluded).
-        /// </param>
-        internal void Update(float p_totElapsed)
-        {
-            if (tweenObj.loopType == LoopType.Incremental)
+            object obj1 = null;
+            object obj2 = null;
+            if (onlyCalcSpeedBasedDur)
             {
-                if (prevCompletedLoops != tweenObj.completedLoops)
+                if (TweenObj.speedBased && !_speedBasedDurationWasSet)
                 {
-                    var completedLoops = tweenObj.completedLoops;
-                    if (tweenObj._loops != -1 && completedLoops >= tweenObj._loops)
-                        --completedLoops;
-                    var p_diffIncr = completedLoops - prevCompletedLoops;
-                    if (p_diffIncr != 0)
-                    {
-                        SetIncremental(p_diffIncr);
-                        prevCompletedLoops = completedLoops;
-                    }
-                }
-            }
-            else if (prevCompletedLoops != 0)
-            {
-                SetIncremental(-prevCompletedLoops);
-                prevCompletedLoops = 0;
-            }
-
-            if (p_totElapsed > (double)_duration)
-                p_totElapsed = _duration;
-            DoUpdate(p_totElapsed);
-        }
-
-        /// <summary>Updates the plugin.</summary>
-        protected abstract void DoUpdate(float p_totElapsed);
-
-        /// <summary>
-        /// Rewinds the tween.
-        /// Should be overriden by tweens that control only part of the property (like HOTPluginVector3X).
-        /// </summary>
-        internal virtual void Rewind() => SetValue(startVal);
-
-        /// <summary>
-        /// Completes the tween.
-        /// Should be overriden by tweens that control only part of the property (like HOTPluginVector3X).
-        /// </summary>
-        internal virtual void Complete() => SetValue(_endVal);
-
-        /// <summary>Reverses the ease of this plugin.</summary>
-        internal void ReverseEase()
-        {
-            _easeReversed = !_easeReversed;
-            if (easeType == EaseType.AnimationCurve || easeInfo.inverseEase == null)
-                return;
-            ease = _easeReversed ? easeInfo.inverseEase : easeInfo.ease;
-        }
-
-        /// <summary>
-        /// Sets the ease type (called during Init, but can also be called by Tweener to change easeType while playing).
-        /// </summary>
-        internal void SetEase(EaseType p_easeType)
-        {
-            easeType = p_easeType;
-            if (easeType == EaseType.AnimationCurve)
-            {
-                if (tweenObj._easeAnimationCurve != null)
-                {
-                    easeCurve = new EaseCurve(tweenObj._easeAnimationCurve);
-                    ease = new TweenDelegate.EaseFunc(easeCurve.Evaluate);
-                }
-                else
-                {
-                    easeType = EaseType.EaseOutQuad;
-                    easeInfo = EaseInfo.GetEaseInfo(easeType);
-                    ease = easeInfo.ease;
+                    obj1 = StartVal;
+                    obj2 = EndVal;
                 }
             }
             else
+                WasStarted = true;
+
+            if (TweenObj.isFrom)
             {
-                easeInfo = EaseInfo.GetEaseInfo(easeType);
-                ease = easeInfo.ease;
+                var endVal = EndVal;
+                this.endVal = GetValue();
+                startVal = endVal;
+            }
+            else
+            {
+                endVal = EndVal;
+                startVal = GetValue();
             }
 
-            if (!_easeReversed || easeInfo.inverseEase == null)
+            SetChangeVal();
+            if (!TweenObj.speedBased || _speedBasedDurationWasSet)
                 return;
-            ease = easeInfo.inverseEase;
+            Duration = GetSpeedBasedDuration(Duration);
+            _speedBasedDurationWasSet = true;
+            if (!onlyCalcSpeedBasedDur)
+                return;
+            StartVal = obj1;
+            EndVal = obj2;
+        }
+    }
+
+    internal void ForceSetSpeedBasedDuration()
+    {
+        if (_speedBasedDurationWasSet)
+            return;
+        Startup(true);
+    }
+
+    internal virtual bool ValidateTarget(object target) => true;
+
+    internal void Update(float totElapsed)
+    {
+        if (TweenObj.loopType == LoopType.Incremental)
+        {
+            if (_prevCompletedLoops != TweenObj.completedLoops)
+            {
+                var completedLoops = TweenObj.completedLoops;
+                if (TweenObj._loops != -1 && completedLoops >= TweenObj._loops)
+                    --completedLoops;
+                var diffIncr = completedLoops - _prevCompletedLoops;
+                if (diffIncr != 0)
+                {
+                    SetIncremental(diffIncr);
+                    _prevCompletedLoops = completedLoops;
+                }
+            }
+        }
+        else if (_prevCompletedLoops != 0)
+        {
+            SetIncremental(-_prevCompletedLoops);
+            _prevCompletedLoops = 0;
         }
 
-        /// <summary>
-        /// Returns the speed-based duration based on the given speed.
-        /// </summary>
-        protected abstract float GetSpeedBasedDuration(float p_speed);
+        if (totElapsed > (double)Duration)
+            totElapsed = Duration;
+        DoUpdate(totElapsed);
+    }
 
-        /// <summary>
-        /// Returns a clone of the basic plugin
-        /// (as it was at construction, without anything that was set during Init).
-        /// </summary>
-        internal ABSTweenPlugin CloneBasic() => Activator.CreateInstance(GetType(),
-            tweenObj == null || !tweenObj.isFrom ? _endVal : _startVal, easeType, isRelative) as ABSTweenPlugin;
+    protected abstract void DoUpdate(float totElapsed);
 
-        /// <summary>
-        /// Sets the typed changeVal based on the current startVal and endVal.
-        /// Can only be called once, otherwise some typedEndVal (like HOTPluginColor) will be set incorrectly.
-        /// </summary>
-        protected abstract void SetChangeVal();
+    internal virtual void Rewind() => SetValue(startVal);
 
-        /// <summary>
-        /// Used by Tweeners to force SetIncremental
-        /// (SetIncremental can't be made internal since
-        /// it needs to be overridden outside of HOTweem for custom plugin).
-        /// </summary>
-        internal void ForceSetIncremental(int p_diffIncr) => SetIncremental(p_diffIncr);
+    internal virtual void Complete() => SetValue(EndVal);
 
-        /// <summary>
-        /// Sets the correct values in case of Incremental loop type.
-        /// Also called by Tweener.ApplySequenceIncrement (used by Sequences during Incremental loops).
-        /// </summary>
-        /// <param name="p_diffIncr">
-        /// The difference from the previous loop increment.
-        /// </param>
-        protected abstract void SetIncremental(int p_diffIncr);
+    internal void ReverseEase()
+    {
+        _easeReversed = !_easeReversed;
+        if (_easeType == EaseType.AnimationCurve || _easeInfo.InverseEase == null)
+            return;
+        Ease = _easeReversed ? _easeInfo.InverseEase : _easeInfo.Ease;
+    }
 
-        /// <summary>
-        /// Sets the value of the controlled property.
-        /// Some plugins (like PlugSetColor or PlugQuaterion) might override this to get values from different properties.
-        /// </summary>
-        /// <param name="p_value">The new value.</param>
-        protected virtual void SetValue(object p_value)
+    internal void SetEase(EaseType easeType)
+    {
+        _easeType = easeType;
+        if (_easeType == EaseType.AnimationCurve)
         {
-            if (_useSpeedTransformAccessors)
+            if (TweenObj._easeAnimationCurve != null)
             {
-                if (_setTransformVector3 != null)
-                    _setTransformVector3((Vector3)p_value);
-                else
-                    _setTransformQuaternion((Quaternion)p_value);
+                _easeCurve = new EaseCurve(TweenObj._easeAnimationCurve);
+                Ease = new TweenDelegate.EaseFunc(_easeCurve.Evaluate);
             }
-            else if (HOTween.IsIOS)
+            else
             {
-                if (propInfo != null)
+                _easeType = EaseType.EaseOutQuad;
+                _easeInfo = EaseInfo.GetEaseInfo(_easeType);
+                Ease = _easeInfo.Ease;
+            }
+        }
+        else
+        {
+            _easeInfo = EaseInfo.GetEaseInfo(_easeType);
+            Ease = _easeInfo.Ease;
+        }
+
+        if (!_easeReversed || _easeInfo.InverseEase == null)
+            return;
+        Ease = _easeInfo.InverseEase;
+    }
+
+    protected abstract float GetSpeedBasedDuration(float speed);
+
+    internal ABSTweenPlugin CloneBasic() =>
+        Activator.CreateInstance(GetType(), !(TweenObj is {isFrom: true}) ? EndVal : StartVal, _easeType, IsRelative) as ABSTweenPlugin;
+
+    protected abstract void SetChangeVal();
+
+    internal void ForceSetIncremental(int diffIncr) =>
+        SetIncremental(diffIncr);
+
+    protected abstract void SetIncremental(int diffIncr);
+
+    protected virtual void SetValue(object value)
+    {
+        if (_useSpeedTransformAccessors)
+        {
+            if (_setTransformVector3 != null)
+                _setTransformVector3((Vector3)value);
+            else
+                _setTransformQuaternion((Quaternion)value);
+        }
+        else if (HOTween.IsIOS)
+        {
+            if (_propInfo != null)
+            {
+                try
                 {
-                    try
-                    {
-                        propInfo.SetValue(tweenObj.target, p_value, null);
-                    }
-                    catch (InvalidCastException ex)
-                    {
-                        propInfo.SetValue(tweenObj.target, (int)Math.Floor((float)p_value), null);
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        propInfo.SetValue(tweenObj.target, (int)Math.Floor((float)p_value), null);
-                    }
+                    _propInfo.SetValue(TweenObj.target, value, null);
                 }
-                else
+                catch (InvalidCastException ex)
                 {
-                    try
-                    {
-                        fieldInfo.SetValue(tweenObj.target, p_value);
-                    }
-                    catch (InvalidCastException ex)
-                    {
-                        fieldInfo.SetValue(tweenObj.target, (int)Math.Floor((float)p_value));
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        fieldInfo.SetValue(tweenObj.target, (int)Math.Floor((float)p_value));
-                    }
+                    _propInfo.SetValue(TweenObj.target, (int)Math.Floor((float)value), null);
+                }
+                catch (ArgumentException ex)
+                {
+                    _propInfo.SetValue(TweenObj.target, (int)Math.Floor((float)value), null);
                 }
             }
             else
             {
                 try
                 {
-                    valAccessor.Set(tweenObj.target, p_value);
+                    _fieldInfo.SetValue(TweenObj.target, value);
                 }
                 catch (InvalidCastException ex)
                 {
-                    valAccessor.Set(tweenObj.target, (int)Math.Floor((float)p_value));
+                    _fieldInfo.SetValue(TweenObj.target, (int)Math.Floor((float)value));
                 }
                 catch (ArgumentException ex)
                 {
-                    valAccessor.Set(tweenObj.target, (int)Math.Floor((float)p_value));
+                    _fieldInfo.SetValue(TweenObj.target, (int)Math.Floor((float)value));
                 }
             }
         }
-
-        /// <summary>
-        /// Gets the current value of the controlled property.
-        /// Some plugins (like PlugSetColor) might override this to set values on different properties.
-        /// </summary>
-        protected virtual object GetValue()
+        else
         {
-            if (_useSpeedTransformAccessors)
-                return _getTransformVector3 != null ? _getTransformVector3() : (object)_getTransformQuaternion();
-            if (!HOTween.IsIOS)
-                return valAccessor.Get(tweenObj.target);
-            return propInfo != null
-                ? propInfo.GetGetMethod().Invoke(tweenObj.target, null)
-                : fieldInfo.GetValue(tweenObj.target);
+            try
+            {
+                _valAccessor.Set(TweenObj.target, value);
+            }
+            catch (InvalidCastException ex)
+            {
+                _valAccessor.Set(TweenObj.target, (int)Math.Floor((float)value));
+            }
+            catch (ArgumentException ex)
+            {
+                _valAccessor.Set(TweenObj.target, (int)Math.Floor((float)value));
+            }
         }
     }
+
+    protected virtual object GetValue()
+    {
+        if (_useSpeedTransformAccessors)
+            return _getTransformVector3?.Invoke() ?? (object)_getTransformQuaternion();
+        if (!HOTween.IsIOS)
+            return _valAccessor.Get(TweenObj.target);
+        return _propInfo != null
+            ? _propInfo.GetGetMethod().Invoke(TweenObj.target, null)
+            : _fieldInfo.GetValue(TweenObj.target);
+    }
+}
+
 }

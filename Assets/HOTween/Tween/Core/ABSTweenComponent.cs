@@ -4,1085 +4,683 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Holoville.HOTween.Core
+namespace Holoville.HOTween.Core {
+
+public abstract class ABSTweenComponent : IHOTweenComponent
 {
-    /// <summary>
-    /// Base class for all HOTween members
-    /// (<see cref="T:Holoville.HOTween.Tweener" /> and <see cref="T:Holoville.HOTween.Sequence" />).
-    /// </summary>
-    public abstract class ABSTweenComponent : IHOTweenComponent
+    internal string _id = "";
+    internal int _intId = -1;
+    internal bool _autoKillOnComplete = true;
+    internal bool _enabled = true;
+    internal float _timeScale = HOTween.kDefTimeScale;
+    internal int _loops = 1;
+    internal LoopType _loopType = HOTween.kDefLoopType;
+    internal UpdateType _updateType = HOTween.kDefUpdateType;
+    internal bool _isPaused;
+
+    internal bool ignoreCallbacks;
+
+    internal bool _steadyIgnoreCallbacks;
+
+    internal Sequence contSequence;
+    internal bool startupDone;
+    internal TweenDelegate.TweenCallback onStart;
+    internal TweenDelegate.TweenCallbackWParms onStartWParms;
+    internal object[] onStartParms;
+    internal TweenDelegate.TweenCallback onUpdate;
+    internal TweenDelegate.TweenCallbackWParms onUpdateWParms;
+    internal object[] onUpdateParms;
+    internal TweenDelegate.TweenCallback onPluginUpdated;
+    internal TweenDelegate.TweenCallbackWParms onPluginUpdatedWParms;
+    internal object[] onPluginUpdatedParms;
+    internal TweenDelegate.TweenCallback onPause;
+    internal TweenDelegate.TweenCallbackWParms onPauseWParms;
+    internal object[] onPauseParms;
+    internal TweenDelegate.TweenCallback onPlay;
+    internal TweenDelegate.TweenCallbackWParms onPlayWParms;
+    internal object[] onPlayParms;
+    internal TweenDelegate.TweenCallback onRewinded;
+    internal TweenDelegate.TweenCallbackWParms onRewindedWParms;
+    internal object[] onRewindedParms;
+    internal TweenDelegate.TweenCallback onStepComplete;
+    internal TweenDelegate.TweenCallbackWParms onStepCompleteWParms;
+    internal object[] onStepCompleteParms;
+    internal TweenDelegate.TweenCallback onComplete;
+    internal TweenDelegate.TweenCallbackWParms onCompleteWParms;
+    internal object[] onCompleteParms;
+
+    protected int CompletedLoops;
+
+    public float Duration { get; protected set; }
+
+    public float FullDuration { get; protected set; }
+    
+    protected float OriginalDuration;
+
+    protected float OriginalNonSpeedBasedDuration;
+
+    protected float Elapsed;
+
+    protected float FullElapsed;
+
+    protected bool Destroyed;
+
+    protected bool IsEmpty = true;
+
+    protected bool IsReversed;
+
+    protected bool IsLoopingBack;
+
+    protected bool HasStarted;
+
+    protected bool IsComplete;
+
+    protected float PrevFullElapsed;
+
+    protected int PrevCompletedLoops;
+
+    internal bool ManageBehaviours;
+
+    internal bool ManageGameObjects;
+
+    internal Behaviour[] ManagedBehavioursOn;
+
+    internal Behaviour[] ManagedBehavioursOff;
+
+    internal GameObject[] ManagedGameObjectsOn;
+
+    internal GameObject[] ManagedGameObjectsOff;
+
+    internal bool[] ManagedBehavioursOriginalState;
+
+    internal bool[] managedGameObjectsOriginalState;
+
+    internal virtual bool steadyIgnoreCallbacks
     {
-        internal string _id = "";
-        internal int _intId = -1;
-        internal bool _autoKillOnComplete = true;
-        internal bool _enabled = true;
-        internal float _timeScale = HOTween.defTimeScale;
-        internal int _loops = 1;
-        internal LoopType _loopType = HOTween.defLoopType;
-        internal UpdateType _updateType = HOTween.defUpdateType;
-        internal bool _isPaused;
+        get => _steadyIgnoreCallbacks;
+        set => _steadyIgnoreCallbacks = value;
+    }
 
-        /// <summary>
-        /// Always set to TRUE by Update(), if isStartupIteration is true,
-        /// and reset to FALSE in the last line of Update().
-        /// Can also be set to TRUE by Sequence.TweenStartupIteration,
-        /// and then immediately reset to FALSE.
-        /// </summary>
-        internal bool ignoreCallbacks;
+    public string id
+    {
+        get => _id;
+        set => _id = value;
+    }
 
-        /// <summary>
-        /// Used by main Sequences to set an ignoreCallbacks value to all its items/subitems,
-        /// which the items/subitmes themselves won't be able to reset.
-        /// Necessary during TweenStartupIteration.
-        /// </summary>
-        internal bool _steadyIgnoreCallbacks;
+    public int intId
+    {
+        get => _intId;
+        set => _intId = value;
+    }
 
-        internal Sequence contSequence;
-        internal bool startupDone;
-        internal TweenDelegate.TweenCallback onStart;
-        internal TweenDelegate.TweenCallbackWParms onStartWParms;
-        internal object[] onStartParms;
-        internal TweenDelegate.TweenCallback onUpdate;
-        internal TweenDelegate.TweenCallbackWParms onUpdateWParms;
-        internal object[] onUpdateParms;
-        internal TweenDelegate.TweenCallback onPluginUpdated;
-        internal TweenDelegate.TweenCallbackWParms onPluginUpdatedWParms;
-        internal object[] onPluginUpdatedParms;
-        internal TweenDelegate.TweenCallback onPause;
-        internal TweenDelegate.TweenCallbackWParms onPauseWParms;
-        internal object[] onPauseParms;
-        internal TweenDelegate.TweenCallback onPlay;
-        internal TweenDelegate.TweenCallbackWParms onPlayWParms;
-        internal object[] onPlayParms;
-        internal TweenDelegate.TweenCallback onRewinded;
-        internal TweenDelegate.TweenCallbackWParms onRewindedWParms;
-        internal object[] onRewindedParms;
-        internal TweenDelegate.TweenCallback onStepComplete;
-        internal TweenDelegate.TweenCallbackWParms onStepCompleteWParms;
-        internal object[] onStepCompleteParms;
-        internal TweenDelegate.TweenCallback onComplete;
-        internal TweenDelegate.TweenCallbackWParms onCompleteWParms;
-        internal object[] onCompleteParms;
+    public bool autoKillOnComplete
+    {
+        get => _autoKillOnComplete;
+        set => _autoKillOnComplete = value;
+    }
 
-        /// <summary>Completed loops.</summary>
-        protected int _completedLoops;
+    public bool enabled
+    {
+        get => _enabled;
+        set => _enabled = value;
+    }
 
-        /// <summary>Duration.</summary>
-        protected float _duration;
+    public float timeScale
+    {
+        get => _timeScale;
+        set => _timeScale = value;
+    }
 
-        /// <summary>Memorized when a partial tween is applied.</summary>
-        protected float _originalDuration;
-
-        /// <summary>Memorized when applying speedBased duration.</summary>
-        protected float _originalNonSpeedBasedDuration;
-
-        /// <summary>Full duration.</summary>
-        protected float _fullDuration;
-
-        /// <summary>Elapsed.</summary>
-        protected float _elapsed;
-
-        /// <summary>Full elapsed.</summary>
-        
-        protected float _fullElapsed;
-
-        /// <summary>Destroyed.</summary>
-        protected bool _destroyed;
-
-        /// <summary>Is empty.</summary>
-        protected bool _isEmpty = true;
-
-        /// <summary>Running backwards.</summary>
-        protected bool _isReversed;
-
-        /// <summary>Yoyo looping back.</summary>
-        protected bool _isLoopingBack;
-
-        /// <summary>Has started.</summary>
-        protected bool _hasStarted;
-
-        /// <summary>Is complete.</summary>
-        protected bool _isComplete;
-
-        /// <summary>
-        /// Used to determine if OnUpdate callbacks should be called.
-        /// Refreshed at the end of each update.
-        /// </summary>
-        protected float prevFullElapsed;
-
-        /// <summary>
-        /// Previously completed loops.
-        /// Refrehsed at the end of each update.
-        /// </summary>
-        protected int prevCompletedLoops;
-
-        /// <summary>True if there are behaviours to manage</summary>
-        internal bool manageBehaviours;
-
-        /// <summary>True if there are gameObject to manage</summary>
-        internal bool manageGameObjects;
-
-        /// <summary>Behaviours to activate</summary>
-        internal Behaviour[] managedBehavioursOn;
-
-        /// <summary>Behaviours to deactivate</summary>
-        internal Behaviour[] managedBehavioursOff;
-
-        /// <summary>GameObjects to activate</summary>
-        internal GameObject[] managedGameObjectsOn;
-
-        /// <summary>GameObejcts to deactivate</summary>
-        internal GameObject[] managedGameObjectsOff;
-
-        /// <summary>True = enabled, False = disabled</summary>
-        internal bool[] managedBehavioursOriginalState;
-
-        /// <summary>True = active, False = inactive</summary>
-        internal bool[] managedGameObjectsOriginalState;
-
-        internal virtual bool steadyIgnoreCallbacks
+    public int loops
+    {
+        get => _loops;
+        set
         {
-            get => _steadyIgnoreCallbacks;
-            set => _steadyIgnoreCallbacks = value;
+            _loops = value;
+            SetFullDuration();
         }
+    }
 
-        /// <summary>
-        /// Eventual string ID of this Tweener/Sequence
-        /// (more than one Tweener/Sequence can share the same ID, thus allowing for grouped operations).
-        /// You can also use <c>intId</c> instead of <c>id</c> for faster operations.
-        /// </summary>
-        public string id
+    public LoopType loopType
+    {
+        get => _loopType;
+        set => _loopType = value;
+    }
+
+    public float position
+    {
+        get => _loops >= 1 ? FullElapsed : Elapsed;
+        set => GoTo(value, !_isPaused);
+    }
+
+    public float elapsed => Elapsed;
+
+    public float fullElapsed => FullElapsed;
+
+    public UpdateType updateType => _updateType;
+
+    public int completedLoops => CompletedLoops;
+
+    public bool destroyed => Destroyed;
+
+    public bool isEmpty => IsEmpty;
+
+    public bool isReversed => IsReversed;
+
+    public bool isLoopingBack => IsLoopingBack;
+
+    public bool isPaused => _isPaused;
+
+    public bool hasStarted => HasStarted;
+
+    public bool isComplete => IsComplete;
+
+    public bool isSequenced => contSequence != null;
+
+    public void Kill() => Kill(true);
+
+    internal virtual void Kill(bool autoRemoveFromHOTween)
+    {
+        if (Destroyed)
+            return;
+        Destroyed = IsEmpty = true;
+        if (!autoRemoveFromHOTween)
+            return;
+        HOTween.Kill(this);
+    }
+
+    public void Play()
+    {
+        if (!_enabled)
+            return;
+        PlayIfPaused();
+    }
+
+    private void PlayIfPaused()
+    {
+        if (!_isPaused || (IsReversed || IsComplete) && (!IsReversed || FullElapsed <= 0.0))
+            return;
+        _isPaused = false;
+        OnPlay();
+    }
+
+    public void PlayForward()
+    {
+        if (!_enabled)
+            return;
+        IsReversed = false;
+        PlayIfPaused();
+    }
+
+    public void PlayBackwards()
+    {
+        if (!_enabled)
+            return;
+        IsReversed = true;
+        PlayIfPaused();
+    }
+
+    public void Pause()
+    {
+        if (!_enabled || _isPaused)
+            return;
+        _isPaused = true;
+        OnPause();
+    }
+
+    public abstract void Rewind();
+
+    public abstract void Restart();
+
+    public void Reverse(bool forcePlay = false)
+    {
+        if (!_enabled)
+            return;
+        IsReversed = !IsReversed;
+        if (!forcePlay)
+            return;
+        Play();
+    }
+
+    public void Complete() => Complete(true);
+
+    public bool GoTo(float time) => GoTo(time, false, false, false);
+
+    public bool GoTo(float time, bool forceUpdate) => GoTo(time, false, forceUpdate, false);
+
+    internal bool GoTo(float time, bool forceUpdate, bool ignoreCallbacks) =>
+        GoTo(time, false, forceUpdate, ignoreCallbacks);
+
+    public bool GoToAndPlay(float time) =>
+        GoTo(time, true, false, false);
+
+    public bool GoToAndPlay(float time, bool forceUpdate) =>
+        GoTo(time, true, forceUpdate, false);
+
+    internal bool GoToAndPlay(float time, bool forceUpdate, bool ignoreCallbacks) =>
+        GoTo(time, true, forceUpdate, ignoreCallbacks);
+
+    public IEnumerator WaitForCompletion()
+    {
+        while (!IsComplete)
+            yield return 0;
+    }
+
+    public IEnumerator WaitForRewind()
+    {
+        while (FullElapsed > 0.0)
+            yield return 0;
+    }
+
+    protected virtual void Reset()
+    {
+        _id = "";
+        _intId = -1;
+        _autoKillOnComplete = true;
+        _enabled = true;
+        _timeScale = HOTween.kDefTimeScale;
+        _loops = 1;
+        _loopType = HOTween.kDefLoopType;
+        _updateType = HOTween.kDefUpdateType;
+        _isPaused = false;
+        CompletedLoops = 0;
+        Duration = OriginalDuration = OriginalNonSpeedBasedDuration = FullDuration = 0.0f;
+        Elapsed = FullElapsed = 0.0f;
+        IsEmpty = true;
+        IsReversed = IsLoopingBack = HasStarted = IsComplete = false;
+        startupDone = false;
+        onStart = null;
+        onStartWParms = null;
+        onStartParms = null;
+        onUpdate = null;
+        onUpdateWParms = null;
+        onUpdateParms = null;
+        onPluginUpdated = null;
+        onPluginUpdatedWParms = null;
+        onPluginUpdatedParms = null;
+        onStepComplete = null;
+        onStepCompleteWParms = null;
+        onStepCompleteParms = null;
+        onComplete = null;
+        onCompleteWParms = null;
+        onCompleteParms = null;
+        onPause = null;
+        onPauseWParms = null;
+        onPauseParms = null;
+        onPlay = null;
+        onPlayWParms = null;
+        onPlayParms = null;
+        onRewinded = null;
+        onRewindedWParms = null;
+        onRewindedParms = null;
+        ManageBehaviours = false;
+        ManagedBehavioursOff = null;
+        ManagedBehavioursOn = null;
+        ManagedBehavioursOriginalState = null;
+        ManageGameObjects = false;
+        ManagedGameObjectsOff = null;
+        ManagedGameObjectsOn = null;
+        managedGameObjectsOriginalState = null;
+    }
+
+    public void ApplyCallback(CallbackType callbackType, TweenDelegate.TweenCallback callback) =>
+        ApplyCallback(false, callbackType, callback, null, null);
+
+    public void ApplyCallback(
+        CallbackType callbackType,
+        TweenDelegate.TweenCallbackWParms callback,
+        params object[] callbackParms)
+    {
+        ApplyCallback(true, callbackType, null, callback, callbackParms);
+    }
+
+    public void ApplyCallback(CallbackType callbackType, GameObject sendMessageTarget, string methodName,
+        object value, SendMessageOptions options = SendMessageOptions.RequireReceiver)
+    {
+        var callbackWParms = new TweenDelegate.TweenCallbackWParms(HOTween.DoSendMessage);
+        var objArray = new object[4]
         {
-            get => _id;
-            set => _id = value;
+            sendMessageTarget,
+            methodName,
+            value,
+            options
+        };
+        ApplyCallback(true, callbackType, null, callbackWParms, objArray);
+    }
+
+    protected virtual void ApplyCallback(bool wParms, CallbackType callbackType,
+        TweenDelegate.TweenCallback callback, TweenDelegate.TweenCallbackWParms callbackWParms,
+        params object[] callbackParms)
+    {
+        switch (callbackType)
+        {
+            case CallbackType.OnStart:
+                onStart = callback;
+                onStartWParms = callbackWParms;
+                onStartParms = callbackParms;
+                break;
+            case CallbackType.OnUpdate:
+                onUpdate = callback;
+                onUpdateWParms = callbackWParms;
+                onUpdateParms = callbackParms;
+                break;
+            case CallbackType.OnStepComplete:
+                onStepComplete = callback;
+                onStepCompleteWParms = callbackWParms;
+                onStepCompleteParms = callbackParms;
+                break;
+            case CallbackType.OnComplete:
+                onComplete = callback;
+                onCompleteWParms = callbackWParms;
+                onCompleteParms = callbackParms;
+                break;
+            case CallbackType.OnPause:
+                onPause = callback;
+                onPauseWParms = callbackWParms;
+                onPauseParms = callbackParms;
+                break;
+            case CallbackType.OnPlay:
+                onPlay = callback;
+                onPlayWParms = callbackWParms;
+                onPlayParms = callbackParms;
+                break;
+            case CallbackType.OnRewinded:
+                onRewinded = callback;
+                onRewindedWParms = callbackWParms;
+                onRewindedParms = callbackParms;
+                break;
+            case CallbackType.OnPluginOverwritten:
+                TweenWarning.Log(
+                    "ApplyCallback > OnPluginOverwritten type is available only with Tweeners and not with Sequences");
+                break;
         }
+    }
 
-        /// <summary>
-        /// Eventual int ID of this Tweener/Sequence
-        /// (more than one Tweener/Sequence can share the same intId, thus allowing for grouped operations).
-        /// The main difference from <c>id</c> is that while <c>id</c> is more legible, <c>intId</c> allows for faster operations.
-        /// </summary>
-        public int intId
+    public abstract bool IsTweening(object target);
+
+    public abstract bool IsTweening(string id);
+
+    public abstract bool IsTweening(int id);
+
+    public abstract bool IsLinkedTo(object target);
+
+    public abstract List<object> GetTweenTargets();
+
+    internal abstract List<IHOTweenComponent> GetTweensById(string id);
+
+    internal abstract List<IHOTweenComponent> GetTweensByIntId(int intId);
+
+    internal abstract void Complete(bool autoRemoveFromHOTween);
+
+    internal bool Update(float shortElapsed) =>
+        Update(shortElapsed, false, false, false);
+
+    internal bool Update(float shortElapsed, bool forceUpdate) =>
+        Update(shortElapsed, forceUpdate, false, false);
+
+    internal bool Update(float shortElapsed, bool forceUpdate, bool isStartupIteration) =>
+        Update(shortElapsed, forceUpdate, isStartupIteration, false);
+
+    internal abstract bool Update(float shortElapsed, bool forceUpdate, bool isStartupIteration, bool ignoreCallbacks);
+
+    internal abstract void SetIncremental(int diffIncr);
+
+    protected abstract bool GoTo(float time, bool play, bool forceUpdate, bool ignoreCallbacks);
+
+    protected virtual void Startup() => startupDone = true;
+
+    protected virtual void OnStart()
+    {
+        if (steadyIgnoreCallbacks || ignoreCallbacks)
+            return;
+        HasStarted = true;
+        if (onStart != null)
+            onStart();
+        else if (onStartWParms != null)
+            onStartWParms(new TweenEvent(this, onStartParms));
+        OnPlay();
+    }
+
+    protected void OnUpdate()
+    {
+        if (steadyIgnoreCallbacks || ignoreCallbacks)
+            return;
+        if (onUpdate != null)
         {
-            get => _intId;
-            set => _intId = value;
+            onUpdate();
         }
-
-        /// <summary>
-        /// Default is <c>true</c>, which means this Tweener/Sequence will be killed and removed from HOTween as soon as it's completed.
-        /// If <c>false</c> doesn't remove this Tweener/Sequence from HOTween when it is completed,
-        /// and you will need to call an <c>HOTween.Kill</c> to remove this Tweener/Sequence.
-        /// </summary>
-        public bool autoKillOnComplete
+        else
         {
-            get => _autoKillOnComplete;
-            set => _autoKillOnComplete = value;
-        }
-
-        /// <summary>
-        /// Default is <c>true</c>.
-        /// If set to <c>false</c>, this Tweener/Sequence will not be updated,
-        /// and any use of animation methods (Play/Pause/Rewind/etc) will be ignored
-        /// (both if called directly via this instance, than if using HOTween.Play/Pause/Rewind/etc.).
-        /// </summary>
-        public bool enabled
-        {
-            get => _enabled;
-            set => _enabled = value;
-        }
-
-        /// <summary>
-        /// Time scale that will be used by this Tweener/Sequence.
-        /// </summary>
-        public float timeScale
-        {
-            get => _timeScale;
-            set => _timeScale = value;
-        }
-
-        /// <summary>
-        /// Number of times the Tweener/Sequence will run (<c>-1</c> means the tween has infinite loops).
-        /// </summary>
-        public int loops
-        {
-            get => _loops;
-            set
-            {
-                _loops = value;
-                SetFullDuration();
-            }
-        }
-
-        /// <summary>
-        /// Type of loop for this Tweener/Sequence, in case <see cref="P:Holoville.HOTween.Core.ABSTweenComponent.loops" /> is greater than 1 (or infinite).
-        /// </summary>
-        public LoopType loopType
-        {
-            get => _loopType;
-            set => _loopType = value;
-        }
-
-        /// <summary>
-        /// Gets and sets the time position of the Tweener/Sequence (loops are included when not infinite, delay is not).
-        /// </summary>
-        public float position
-        {
-            get => _loops >= 1 ? _fullElapsed : _elapsed;
-            set => GoTo(value, !_isPaused);
-        }
-
-        /// <summary>
-        /// Duration of this Tweener/Sequence, loops and tween delay excluded.
-        /// </summary>
-        public float duration => _duration;
-
-        /// <summary>
-        /// Full duration of this Tweener/Sequence, loops included (when not infinite) but tween delay excluded.
-        /// </summary>
-        public float fullDuration => _fullDuration;
-
-        /// <summary>
-        /// Elapsed time within the current loop (tween delay excluded).
-        /// </summary>
-        public float elapsed => _elapsed;
-
-        /// <summary>
-        /// Full elapsed time including loops (but without considering tween delay).
-        /// </summary>
-        public float fullElapsed => _fullElapsed;
-
-        /// <summary>The update type for this Tweener/Sequence.</summary>
-        public UpdateType updateType => _updateType;
-
-        /// <summary>Number of loops that have been executed.</summary>
-        public int completedLoops => _completedLoops;
-
-        /// <summary>
-        /// Returns a value of <c>true</c> if this Tweener/Sequence was destroyed
-        /// (either because it was manually destroyed, because it was completed, or because its target was destroyed).
-        /// </summary>
-        public bool destroyed => _destroyed;
-
-        /// <summary>
-        /// Returns a value of <c>true</c> if this Tweener/Sequence contains no tweens
-        /// (if this is a tween, it means that no valid property to tween was set;
-        /// if this is a sequence, it means no valid <see cref="T:Holoville.HOTween.Tweener" /> was yet added).
-        /// </summary>
-        public bool isEmpty => _isEmpty;
-
-        /// <summary>
-        /// Returns a value of <c>true</c> if this Tweener/Sequence is set to go backwards (because of a call to <c>Reverse</c>.
-        /// </summary>
-        public bool isReversed => _isReversed;
-
-        /// <summary>
-        /// Returns a value of <c>true</c> when this Tweener/Sequence is in the "going backwards" part of a Yoyo loop.
-        /// </summary>
-        public bool isLoopingBack => _isLoopingBack;
-
-        /// <summary>
-        /// Returns a value of <c>true</c> if this Tweener/Sequence is paused.
-        /// </summary>
-        public bool isPaused => _isPaused;
-
-        /// <summary>
-        /// Returns a value of <c>true</c> after this Tweener/Sequence was started the first time,
-        /// or if a call to <c>GoTo</c> or <c>GoToAndPlay</c> was executed.
-        /// </summary>
-        public bool hasStarted => _hasStarted;
-
-        /// <summary>
-        /// Returns a value of <c>true</c> when this Tweener/Sequence is complete.
-        /// </summary>
-        public bool isComplete => _isComplete;
-
-        /// <summary>
-        /// Returns a value of <c>true</c> if this Tweener/Sequence was added to a Sequence.
-        /// </summary>
-        public bool isSequenced => contSequence != null;
-
-        /// <summary>
-        /// Kills this Tweener/Sequence, removes it from HOTween, and cleans it.
-        /// </summary>
-        public void Kill() => Kill(true);
-
-        /// <summary>Kills this Tweener/Sequence and cleans it.</summary>
-        /// <param name="p_autoRemoveFromHOTween">
-        /// If <c>true</c> also calls <c>HOTween.Kill(this)</c> to remove it from HOTween.
-        /// Set internally to <c>false</c> when I already know that HOTween is going to remove it.
-        /// </param>
-        internal virtual void Kill(bool p_autoRemoveFromHOTween)
-        {
-            if (_destroyed)
+            if (onUpdateWParms == null)
                 return;
-            _destroyed = _isEmpty = true;
-            if (!p_autoRemoveFromHOTween)
+            onUpdateWParms(new TweenEvent(this, onUpdateParms));
+        }
+    }
+
+    protected void OnPluginUpdated(ABSTweenPlugin plugin)
+    {
+        if (steadyIgnoreCallbacks || ignoreCallbacks)
+            return;
+        if (onPluginUpdated != null)
+        {
+            onPluginUpdated();
+        }
+        else
+        {
+            if (onPluginUpdatedWParms == null)
                 return;
-            HOTween.Kill(this);
+            onPluginUpdatedWParms(new TweenEvent(this, onPluginUpdatedParms, plugin));
         }
+    }
 
-        /// <summary>Resumes this Tweener/Sequence (tween delay included).</summary>
-        public void Play()
+    protected void OnPause()
+    {
+        if (steadyIgnoreCallbacks || ignoreCallbacks)
+            return;
+        ManageObjects(false);
+        if (onPause != null)
         {
-            if (!_enabled)
+            onPause();
+        }
+        else
+        {
+            if (onPauseWParms == null)
                 return;
-            PlayIfPaused();
+            onPauseWParms(new TweenEvent(this, onPauseParms));
         }
+    }
 
-        private void PlayIfPaused()
+    protected virtual void OnPlay()
+    {
+        if (steadyIgnoreCallbacks || ignoreCallbacks)
+            return;
+        ManageObjects(true);
+        if (onPlay != null)
         {
-            if (!_isPaused || (_isReversed || _isComplete) && (!_isReversed || _fullElapsed <= 0.0))
+            onPlay();
+        }
+        else
+        {
+            if (onPlayWParms == null)
                 return;
-            _isPaused = false;
-            OnPlay();
+            onPlayWParms(new TweenEvent(this, onPlayParms));
         }
+    }
 
-        /// <summary>
-        /// Resumes this Tweener/Sequence (tween delay included) and plays it forward.
-        /// </summary>
-        public void PlayForward()
+    protected void OnRewinded()
+    {
+        if (steadyIgnoreCallbacks || ignoreCallbacks)
+            return;
+        if (onRewinded != null)
         {
-            if (!_enabled)
+            onRewinded();
+        }
+        else
+        {
+            if (onRewindedWParms == null)
                 return;
-            _isReversed = false;
-            PlayIfPaused();
+            onRewindedWParms(new TweenEvent(this, onRewindedParms));
         }
+    }
 
-        /// <summary>Resumes this Tweener/Sequence and plays it backwards.</summary>
-        public void PlayBackwards()
+    protected void OnStepComplete()
+    {
+        if (steadyIgnoreCallbacks || ignoreCallbacks)
+            return;
+        if (onStepComplete != null)
         {
-            if (!_enabled)
+            onStepComplete();
+        }
+        else
+        {
+            if (onStepCompleteWParms == null)
                 return;
-            _isReversed = true;
-            PlayIfPaused();
+            onStepCompleteWParms(new TweenEvent(this, onStepCompleteParms));
         }
+    }
 
-        /// <summary>Pauses this Tweener/Sequence.</summary>
-        public void Pause()
+    protected void OnComplete()
+    {
+        IsComplete = true;
+        OnStepComplete();
+        if (steadyIgnoreCallbacks || ignoreCallbacks || onComplete == null && onCompleteWParms == null)
+            return;
+        if (HOTween.isUpdateLoop)
+            HOTween.OnCompletes.Add(this);
+        else
+            OnCompleteDispatch();
+    }
+
+    internal void OnCompleteDispatch()
+    {
+        if (onComplete != null)
         {
-            if (!_enabled || _isPaused)
+            onComplete();
+        }
+        else
+        {
+            if (onCompleteWParms == null)
                 return;
-            _isPaused = true;
-            OnPause();
+            onCompleteWParms(new TweenEvent(this, onCompleteParms));
+        }
+    }
+
+    protected void SetFullDuration() =>
+        FullDuration = _loops < 0 ? float.PositiveInfinity : Duration * _loops;
+
+    protected void SetElapsed()
+    {
+        if (Duration == 0.0 || _loops >= 0 && CompletedLoops >= _loops)
+            Elapsed = Duration;
+        else if (FullElapsed < (double)Duration)
+            Elapsed = FullElapsed;
+        else
+            Elapsed = FullElapsed % Duration;
+    }
+
+    protected void SetLoops()
+    {
+        if (Duration == 0.0)
+        {
+            CompletedLoops = 1;
+        }
+        else
+        {
+            var num1 = FullElapsed / Duration;
+            var num2 = (int)Math.Ceiling(num1);
+            CompletedLoops = num2 - (double)num1 >= 1.0000000116861E-07 ? num2 - 1 : num2;
         }
 
-        /// <summary>
-        /// Rewinds this Tweener/Sequence (loops and tween delay included), and pauses it.
-        /// </summary>
-        public abstract void Rewind();
+        IsLoopingBack = _loopType != LoopType.Restart && _loopType != LoopType.Incremental &&
+                        (_loops > 0 && (CompletedLoops < _loops && CompletedLoops % 2 != 0 ||
+                                        CompletedLoops >= _loops && CompletedLoops % 2 == 0) ||
+                         _loops < 0 && CompletedLoops % 2 != 0);
+    }
 
-        /// <summary>
-        /// Restarts this Tweener/Sequence from the beginning (loops and tween delay included).
-        /// </summary>
-        public abstract void Restart();
-
-        /// <summary>
-        /// Reverses this Tweener/Sequence,
-        /// animating it backwards from its curren position.
-        /// </summary>
-        /// <param name="p_forcePlay">
-        /// If TRUE, the tween will also start playing in case it was paused,
-        /// otherwise it will maintain its current play/pause state (default).
-        /// </param>
-        public void Reverse(bool p_forcePlay = false)
+    protected void ManageObjects(bool isPlay)
+    {
+        if (ManageBehaviours)
         {
-            if (!_enabled)
-                return;
-            _isReversed = !_isReversed;
-            if (!p_forcePlay)
-                return;
-            Play();
-        }
-
-        /// <summary>
-        /// Completes this Tweener/Sequence.
-        /// Where a loop was involved, the Tweener/Sequence completes at the position where it would actually be after the set number of loops.
-        /// If there were infinite loops, this method will have no effect.
-        /// </summary>
-        public void Complete() => Complete(true);
-
-        /// <summary>
-        /// Sends the Tweener/Sequence to the given time (taking also loops into account).
-        /// If the time is bigger than the total Tweener/Sequence duration, it goes to the end.
-        /// </summary>
-        /// <param name="p_time">
-        /// The time where the Tweener/Sequence should be sent.
-        /// </param>
-        /// <returns>
-        /// Returns <c>true</c> if the Tweener/Sequence reached its end and was completed.
-        /// </returns>
-        public bool GoTo(float p_time) => GoTo(p_time, false, false, false);
-
-        /// <summary>
-        /// Sends the Tweener/Sequence to the given time (taking also loops into account).
-        /// If the time is bigger than the total Tweener/Sequence duration, it goes to the end.
-        /// </summary>
-        /// <param name="p_time">
-        /// The time where the Tweener/Sequence should be sent.
-        /// </param>
-        /// <param name="p_forceUpdate">
-        /// By default, if a Tweener/Sequence is already at the exact given time, it will not be refreshed.
-        /// Setting this to <c>true</c> will force it to refresh
-        /// (useful only if you want to be sure that any changes you made to the tweened property,
-        /// outside of HOTween, are reset).
-        /// </param>
-        /// <returns>
-        /// Returns <c>true</c> if the Tweener/Sequence reached its end and was completed.
-        /// </returns>
-        public bool GoTo(float p_time, bool p_forceUpdate) => GoTo(p_time, false, p_forceUpdate, false);
-
-        internal bool GoTo(float p_time, bool p_forceUpdate, bool p_ignoreCallbacks) =>
-            GoTo(p_time, false, p_forceUpdate, p_ignoreCallbacks);
-
-        /// <summary>
-        /// Sends the Tweener/Sequence to the given time (taking also loops into account) and plays it.
-        /// If the time is bigger than the total Tweener/Sequence duration, it goes to the end.
-        /// </summary>
-        /// <param name="p_time">
-        /// The time where the Tweener/Sequence should be sent.
-        /// </param>
-        /// <returns>
-        /// Returns <c>true</c> if the Tweener/Sequence reached its end and was completed.
-        /// </returns>
-        public bool GoToAndPlay(float p_time) => GoTo(p_time, true, false, false);
-
-        /// <summary>
-        /// Sends the Tweener/Sequence to the given time (taking also loops into account) and plays it.
-        /// If the time is bigger than the total Tweener/Sequence duration, it goes to the end.
-        /// </summary>
-        /// <param name="p_time">
-        /// The time where the Tweener/Sequence should be sent.
-        /// </param>
-        /// <param name="p_forceUpdate">
-        /// By default, if a Tweener/Sequence is already at the exact given time, it will not be refreshed.
-        /// Setting this to <c>true</c> will force it to refresh
-        /// (useful only if you want to be sure that any changes you made to the tweened property,
-        /// outside of HOTween, are reset).
-        /// </param>
-        /// <returns>
-        /// Returns <c>true</c> if the Tweener/Sequence reached its end and was completed.
-        /// </returns>
-        public bool GoToAndPlay(float p_time, bool p_forceUpdate) => GoTo(p_time, true, p_forceUpdate, false);
-
-        internal bool GoToAndPlay(float p_time, bool p_forceUpdate, bool p_ignoreCallbacks) =>
-            GoTo(p_time, true, p_forceUpdate, p_ignoreCallbacks);
-
-        /// <summary>
-        /// A coroutine that waits until the Tweener/Sequence is complete (delays and loops included).
-        /// You can use it inside a coroutine as a yield. Ex:
-        /// yield return StartCoroutine( myTweenComponent.WaitForCompletion() );
-        /// </summary>
-        public IEnumerator WaitForCompletion()
-        {
-            while (!_isComplete)
-                yield return 0;
-        }
-
-        /// <summary>
-        /// A coroutine that waits until the Tweener/Sequence is rewinded (loops included).
-        /// You can use it inside a coroutine as a yield. Ex:
-        /// yield return StartCoroutine( myTweenComponent.WaitForRewind() );
-        /// </summary>
-        public IEnumerator WaitForRewind()
-        {
-            while (_fullElapsed > 0.0)
-                yield return 0;
-        }
-
-        /// <summary>
-        /// Completely resets this tween, except its target (in case of Tweeners).
-        /// </summary>
-        protected virtual void Reset()
-        {
-            _id = "";
-            _intId = -1;
-            _autoKillOnComplete = true;
-            _enabled = true;
-            _timeScale = HOTween.defTimeScale;
-            _loops = 1;
-            _loopType = HOTween.defLoopType;
-            _updateType = HOTween.defUpdateType;
-            _isPaused = false;
-            _completedLoops = 0;
-            _duration = _originalDuration = _originalNonSpeedBasedDuration = _fullDuration = 0.0f;
-            _elapsed = _fullElapsed = 0.0f;
-            _isEmpty = true;
-            _isReversed = _isLoopingBack = _hasStarted = _isComplete = false;
-            startupDone = false;
-            onStart = null;
-            onStartWParms = null;
-            onStartParms = null;
-            onUpdate = null;
-            onUpdateWParms = null;
-            onUpdateParms = null;
-            onPluginUpdated = null;
-            onPluginUpdatedWParms = null;
-            onPluginUpdatedParms = null;
-            onStepComplete = null;
-            onStepCompleteWParms = null;
-            onStepCompleteParms = null;
-            onComplete = null;
-            onCompleteWParms = null;
-            onCompleteParms = null;
-            onPause = null;
-            onPauseWParms = null;
-            onPauseParms = null;
-            onPlay = null;
-            onPlayWParms = null;
-            onPlayParms = null;
-            onRewinded = null;
-            onRewindedWParms = null;
-            onRewindedParms = null;
-            manageBehaviours = false;
-            managedBehavioursOff = null;
-            managedBehavioursOn = null;
-            managedBehavioursOriginalState = null;
-            manageGameObjects = false;
-            managedGameObjectsOff = null;
-            managedGameObjectsOn = null;
-            managedGameObjectsOriginalState = null;
-        }
-
-        /// <summary>
-        /// Assigns the given callback to this Tweener/Sequence,
-        /// overwriting any existing callbacks of the same type.
-        /// </summary>
-        /// <param name="p_callbackType">The type of callback to apply</param>
-        /// <param name="p_callback">The function to call, who must return <c>void</c> and accept no parameters</param>
-        public void ApplyCallback(CallbackType p_callbackType, TweenDelegate.TweenCallback p_callback) =>
-            ApplyCallback(false, p_callbackType, p_callback, null, null);
-
-        /// <summary>
-        /// Assigns the given callback to this Tweener/Sequence,
-        /// overwriting any existing callbacks of the same type.
-        /// </summary>
-        /// <param name="p_callbackType">The type of callback to apply</param>
-        /// <param name="p_callback">The function to call.
-        /// It must return <c>void</c> and has to accept a single parameter of type <see cref="T:Holoville.HOTween.TweenEvent" /></param>
-        /// <param name="p_callbackParms">Additional comma separated parameters to pass to the function</param>
-        public void ApplyCallback(
-            CallbackType p_callbackType,
-            TweenDelegate.TweenCallbackWParms p_callback,
-            params object[] p_callbackParms)
-        {
-            ApplyCallback(true, p_callbackType, null, p_callback, p_callbackParms);
-        }
-
-        /// <summary>
-        /// Assigns the given callback to this Tweener/Sequence,
-        /// overwriting any existing callbacks of the same type.
-        /// This overload will use sendMessage to call the method named p_methodName
-        /// on every MonoBehaviour in the p_sendMessageTarget GameObject.
-        /// </summary>
-        /// <param name="p_callbackType">The type of callback to apply</param>
-        /// <param name="p_sendMessageTarget">GameObject to target for sendMessage</param>
-        /// <param name="p_methodName">Name of the method to call</param>
-        /// <param name="p_value">Eventual additional parameter</param>
-        /// <param name="p_options">SendMessageOptions</param>
-        public void ApplyCallback(
-            CallbackType p_callbackType,
-            GameObject p_sendMessageTarget,
-            string p_methodName,
-            object p_value,
-            SendMessageOptions p_options = SendMessageOptions.RequireReceiver)
-        {
-            var p_callbackWParms = new TweenDelegate.TweenCallbackWParms(HOTween.DoSendMessage);
-            var objArray = new object[4]
+            var num = 0;
+            if (ManagedBehavioursOn != null)
             {
-                p_sendMessageTarget,
-                p_methodName,
-                p_value,
-                p_options
-            };
-            ApplyCallback(true, p_callbackType, null, p_callbackWParms, objArray);
-        }
-
-        /// <summary>
-        /// Assigns the given callback to this Tweener/Sequence,
-        /// overwriting any existing callbacks of the same type.
-        /// </summary>
-        protected virtual void ApplyCallback(
-            bool p_wParms,
-            CallbackType p_callbackType,
-            TweenDelegate.TweenCallback p_callback,
-            TweenDelegate.TweenCallbackWParms p_callbackWParms,
-            params object[] p_callbackParms)
-        {
-            switch (p_callbackType)
-            {
-                case CallbackType.OnStart:
-                    onStart = p_callback;
-                    onStartWParms = p_callbackWParms;
-                    onStartParms = p_callbackParms;
-                    break;
-                case CallbackType.OnUpdate:
-                    onUpdate = p_callback;
-                    onUpdateWParms = p_callbackWParms;
-                    onUpdateParms = p_callbackParms;
-                    break;
-                case CallbackType.OnStepComplete:
-                    onStepComplete = p_callback;
-                    onStepCompleteWParms = p_callbackWParms;
-                    onStepCompleteParms = p_callbackParms;
-                    break;
-                case CallbackType.OnComplete:
-                    onComplete = p_callback;
-                    onCompleteWParms = p_callbackWParms;
-                    onCompleteParms = p_callbackParms;
-                    break;
-                case CallbackType.OnPause:
-                    onPause = p_callback;
-                    onPauseWParms = p_callbackWParms;
-                    onPauseParms = p_callbackParms;
-                    break;
-                case CallbackType.OnPlay:
-                    onPlay = p_callback;
-                    onPlayWParms = p_callbackWParms;
-                    onPlayParms = p_callbackParms;
-                    break;
-                case CallbackType.OnRewinded:
-                    onRewinded = p_callback;
-                    onRewindedWParms = p_callbackWParms;
-                    onRewindedParms = p_callbackParms;
-                    break;
-                case CallbackType.OnPluginOverwritten:
-                    TweenWarning.Log(
-                        "ApplyCallback > OnPluginOverwritten type is available only with Tweeners and not with Sequences");
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Returns <c>true</c> if the given target is currently involved in a running tween or sequence.
-        /// Returns <c>false</c> both if the given target is not inside a tween, than if the relative tween is paused.
-        /// To simply check if the target is attached to a tween or sequence, use <c>IsLinkedTo( target )</c> instead.
-        /// </summary>
-        /// <param name="p_target">The target to check.</param>
-        /// <returns>
-        /// A value of <c>true</c> if the given target is currently involved in a running tween or sequence.
-        /// </returns>
-        public abstract bool IsTweening(object p_target);
-
-        /// <summary>
-        /// Returns <c>true</c> if the tween with the given string id is currently involved in a running tween or sequence.
-        /// </summary>
-        /// <param name="p_id">The id to check for.</param>
-        public abstract bool IsTweening(string p_id);
-
-        /// <summary>
-        /// Returns <c>true</c> if the tween with the given int id is currently involved in a running tween or sequence.
-        /// </summary>
-        /// <param name="p_id">The id to check for.</param>
-        public abstract bool IsTweening(int p_id);
-
-        /// <summary>
-        /// Returns <c>true</c> if the given target is linked to a tween or sequence (running or not).
-        /// </summary>
-        /// <param name="p_target">The target to check.</param>
-        /// <returns>
-        /// A value of <c>true</c> if the given target is linked to a tween or sequence (running or not).
-        /// </returns>
-        public abstract bool IsLinkedTo(object p_target);
-
-        /// <summary>
-        /// Returns a list of all the targets of this tween, or NULL if there are none.
-        /// </summary>
-        /// <returns>A list of all the targets of this tween, or NULL if there are none.</returns>
-        public abstract List<object> GetTweenTargets();
-
-        /// <summary>
-        /// Returns a list of the eventual existing tweens with the given Id within this ABSTweenComponent,
-        /// nested tweens included (or an empty list if no tweens were found).
-        /// </summary>
-        internal abstract List<IHOTweenComponent> GetTweensById(string p_id);
-
-        /// <summary>
-        /// Returns a list of the eventual existing tweens with the given intId within this ABSTweenComponent,
-        /// nested tweens included (or an empty list if no tweens were found).
-        /// </summary>
-        internal abstract List<IHOTweenComponent> GetTweensByIntId(int p_intId);
-
-        /// <summary>
-        /// Used internally by HOTween, to avoid having the tween calling a kill while HOTween will already be killing it.
-        /// </summary>
-        internal abstract void Complete(bool p_doAutoKill);
-
-        /// <summary>
-        /// Updates the Tweener/Sequence by the given elapsed time,
-        /// and returns a value of <c>true</c> if the Tweener/Sequence is complete.
-        /// </summary>
-        /// <param name="p_elapsed">The elapsed time since the last update.</param>
-        /// <returns>
-        /// A value of <c>true</c> if the tween is not reversed and is complete (or the tween target doesn't exist anymore), otherwise <c>false</c>.
-        /// </returns>
-        internal bool Update(float p_elapsed) => Update(p_elapsed, false, false, false);
-
-        /// <summary>
-        /// Updates the Tweener/Sequence by the given elapsed time,
-        /// and returns a value of <c>true</c> if the Tweener/Sequence is complete.
-        /// </summary>
-        /// <param name="p_elapsed">The elapsed time since the last update.</param>
-        /// <param name="p_forceUpdate">
-        /// If <c>true</c> forces the update even if the Tweener/Sequence is complete or paused,
-        /// but ignores onUpdate, and sends onComplete and onStepComplete calls only if the Tweener/Sequence wasn't complete before this call.
-        /// </param>
-        /// <returns>
-        /// A value of <c>true</c> if the tween is not reversed and complete (or the tween target doesn't exist anymore), otherwise <c>false</c>.
-        /// </returns>
-        internal bool Update(float p_elapsed, bool p_forceUpdate) => Update(p_elapsed, p_forceUpdate, false, false);
-
-        /// <summary>
-        /// Updates the Tweener/Sequence by the given elapsed time,
-        /// and returns a value of <c>true</c> if the Tweener/Sequence is complete.
-        /// </summary>
-        /// <param name="p_elapsed">The elapsed time since the last update.</param>
-        /// <param name="p_forceUpdate">
-        /// If <c>true</c> forces the update even if the Tweener/Sequence is complete or paused,
-        /// but ignores onUpdate, and sends onComplete and onStepComplete calls only if the Tweener/Sequence wasn't complete before this call.
-        /// </param>
-        /// <param name="p_isStartupIteration">
-        /// If <c>true</c> means the update is due to a startup iteration (managed by Sequence Startup),
-        /// and all callbacks will be ignored.
-        /// </param>
-        /// <returns>
-        /// A value of <c>true</c> if the tween is not reversed and complete (or the tween target doesn't exist anymore), otherwise <c>false</c>.
-        /// </returns>
-        internal bool Update(float p_elapsed, bool p_forceUpdate, bool p_isStartupIteration) =>
-            Update(p_elapsed, p_forceUpdate, p_isStartupIteration, false);
-
-        /// <summary>
-        /// Updates the Tweener/Sequence by the given elapsed time,
-        /// and returns a value of <c>true</c> if the Tweener/Sequence is complete.
-        /// </summary>
-        /// <param name="p_elapsed">The elapsed time since the last update.</param>
-        /// <param name="p_forceUpdate">
-        /// If <c>true</c> forces the update even if the Tweener/Sequence is complete or paused,
-        /// but ignores onUpdate, and sends onComplete and onStepComplete calls only if the Tweener/Sequence wasn't complete before this call.
-        /// </param>
-        /// <param name="p_isStartupIteration">
-        /// If <c>true</c> means the update is due to a startup iteration (managed by Sequence Startup),
-        /// and all callbacks will be ignored.
-        /// </param>
-        /// <param name="p_ignoreCallbacks">
-        /// If <c>true</c> doesn't call any callback method.
-        /// </param>
-        /// <returns>
-        /// A value of <c>true</c> if the tween is not reversed and complete (or the tween target doesn't exist anymore), otherwise <c>false</c>.
-        /// </returns>
-        internal abstract bool Update(
-            float p_elapsed,
-            bool p_forceUpdate,
-            bool p_isStartupIteration,
-            bool p_ignoreCallbacks);
-
-        /// <summary>
-        /// Applies the correct Incremental Sequence loop value.
-        /// Called by Sequences when they need to change the increment value of nested Sequences/Tweeners.
-        /// </summary>
-        /// <param name="p_diffIncr">
-        /// The difference from the previous main Sequence loop increment.
-        /// </param>
-        internal abstract void SetIncremental(int p_diffIncr);
-
-        /// <summary>
-        /// Sends the Tweener/Sequence to the given time (taking also loops into account) and plays it.
-        /// If the time is bigger than the total Tweener/Sequence duration, it goes to the end.
-        /// </summary>
-        protected abstract bool GoTo(
-            float p_time,
-            bool p_play,
-            bool p_forceUpdate,
-            bool p_ignoreCallbacks);
-
-        /// <summary>
-        /// Startup this tween
-        /// (might or might not call OnStart, depending if the tween is in a Sequence or not).
-        /// Can be executed only once per tween.
-        /// </summary>
-        protected virtual void Startup() => startupDone = true;
-
-        /// <summary>Manages on first start behaviour.</summary>
-        protected virtual void OnStart()
-        {
-            if (steadyIgnoreCallbacks || ignoreCallbacks)
-                return;
-            _hasStarted = true;
-            if (onStart != null)
-                onStart();
-            else if (onStartWParms != null)
-                onStartWParms(new TweenEvent(this, onStartParms));
-            OnPlay();
-        }
-
-        /// <summary>Manages on update behaviour.</summary>
-        protected void OnUpdate()
-        {
-            if (steadyIgnoreCallbacks || ignoreCallbacks)
-                return;
-            if (onUpdate != null)
-            {
-                onUpdate();
-            }
-            else
-            {
-                if (onUpdateWParms == null)
-                    return;
-                onUpdateWParms(new TweenEvent(this, onUpdateParms));
-            }
-        }
-
-        /// <summary>Manages on plugin results behaviour.</summary>
-        protected void OnPluginUpdated(ABSTweenPlugin p_plugin)
-        {
-            if (steadyIgnoreCallbacks || ignoreCallbacks)
-                return;
-            if (onPluginUpdated != null)
-            {
-                onPluginUpdated();
-            }
-            else
-            {
-                if (onPluginUpdatedWParms == null)
-                    return;
-                onPluginUpdatedWParms(new TweenEvent(this, onPluginUpdatedParms, p_plugin));
-            }
-        }
-
-        /// <summary>Manages on pause behaviour.</summary>
-        protected void OnPause()
-        {
-            if (steadyIgnoreCallbacks || ignoreCallbacks)
-                return;
-            ManageObjects(false);
-            if (onPause != null)
-            {
-                onPause();
-            }
-            else
-            {
-                if (onPauseWParms == null)
-                    return;
-                onPauseWParms(new TweenEvent(this, onPauseParms));
-            }
-        }
-
-        /// <summary>
-        /// Manages on resume behaviour (also called when the tween starts).
-        /// </summary>
-        protected virtual void OnPlay()
-        {
-            if (steadyIgnoreCallbacks || ignoreCallbacks)
-                return;
-            ManageObjects(true);
-            if (onPlay != null)
-            {
-                onPlay();
-            }
-            else
-            {
-                if (onPlayWParms == null)
-                    return;
-                onPlayWParms(new TweenEvent(this, onPlayParms));
-            }
-        }
-
-        /// <summary>Manages on rewinded behaviour.</summary>
-        protected void OnRewinded()
-        {
-            if (steadyIgnoreCallbacks || ignoreCallbacks)
-                return;
-            if (onRewinded != null)
-            {
-                onRewinded();
-            }
-            else
-            {
-                if (onRewindedWParms == null)
-                    return;
-                onRewindedWParms(new TweenEvent(this, onRewindedParms));
-            }
-        }
-
-        /// <summary>Manages step on complete behaviour.</summary>
-        protected void OnStepComplete()
-        {
-            if (steadyIgnoreCallbacks || ignoreCallbacks)
-                return;
-            if (onStepComplete != null)
-            {
-                onStepComplete();
-            }
-            else
-            {
-                if (onStepCompleteWParms == null)
-                    return;
-                onStepCompleteWParms(new TweenEvent(this, onStepCompleteParms));
-            }
-        }
-
-        /// <summary>Manages on complete behaviour.</summary>
-        protected void OnComplete()
-        {
-            _isComplete = true;
-            OnStepComplete();
-            if (steadyIgnoreCallbacks || ignoreCallbacks || onComplete == null && onCompleteWParms == null)
-                return;
-            if (HOTween.isUpdateLoop)
-                HOTween.onCompletes.Add(this);
-            else
-                OnCompleteDispatch();
-        }
-
-        /// <summary>
-        /// Called by HOTween if this tween was placed inside its onCompletes list during this.OnComplete().
-        /// </summary>
-        internal void OnCompleteDispatch()
-        {
-            if (onComplete != null)
-            {
-                onComplete();
-            }
-            else
-            {
-                if (onCompleteWParms == null)
-                    return;
-                onCompleteWParms(new TweenEvent(this, onCompleteParms));
-            }
-        }
-
-        /// <summary>
-        /// Sets the current <c>fullDuration</c>, based on the current <c>duration</c> and <c>loops</c> values.
-        /// Remember to call this method each time you change the duration or loops of a tween.
-        /// </summary>
-        protected void SetFullDuration() => _fullDuration = _loops < 0 ? float.PositiveInfinity : _duration * _loops;
-
-        /// <summary>
-        /// Sets the current <c>elapsed</c> time, based on the current <c>fullElapsed</c> and <c>completedLoops</c> values.
-        /// Remember to call this method each time you set fullElapsed (after changing the eventual loops count where needed).
-        /// </summary>
-        protected void SetElapsed()
-        {
-            if (_duration == 0.0 || _loops >= 0 && _completedLoops >= _loops)
-                _elapsed = _duration;
-            else if (_fullElapsed < (double)_duration)
-                _elapsed = _fullElapsed;
-            else
-                _elapsed = _fullElapsed % _duration;
-        }
-
-        /// <summary>
-        /// Sets <c>completedLoops</c> and <c>isLoopingBack</c>, based on the current <c>fullElapsed</c> value.
-        /// </summary>
-        protected void SetLoops()
-        {
-            if (_duration == 0.0)
-            {
-                _completedLoops = 1;
-            }
-            else
-            {
-                var num1 = _fullElapsed / _duration;
-                var num2 = (int)Math.Ceiling(num1);
-                _completedLoops = num2 - (double)num1 >= 1.0000000116861E-07 ? num2 - 1 : num2;
-            }
-
-            _isLoopingBack = _loopType != LoopType.Restart && _loopType != LoopType.Incremental &&
-                             (_loops > 0 && (_completedLoops < _loops && _completedLoops % 2 != 0 ||
-                                             _completedLoops >= _loops && _completedLoops % 2 == 0) ||
-                              _loops < 0 && _completedLoops % 2 != 0);
-        }
-
-        /// <summary>
-        /// Manages the components/gameObjects that should be activated/deactivated.
-        /// </summary>
-        protected void ManageObjects(bool isPlay)
-        {
-            if (manageBehaviours)
-            {
-                var num = 0;
-                if (managedBehavioursOn != null)
+                num = ManagedBehavioursOn.Length;
+                for (var index = 0; index < ManagedBehavioursOn.Length; ++index)
                 {
-                    num = managedBehavioursOn.Length;
-                    for (var index = 0; index < managedBehavioursOn.Length; ++index)
-                    {
-                        var behaviour = managedBehavioursOn[index];
-                        if (!(behaviour == null))
-                        {
-                            if (isPlay)
-                            {
-                                managedBehavioursOriginalState[index] = behaviour.enabled;
-                                behaviour.enabled = true;
-                            }
-                            else
-                                behaviour.enabled = managedBehavioursOriginalState[index];
-                        }
-                    }
-                }
-
-                if (managedBehavioursOff != null)
-                {
-                    for (var index = 0; index < managedBehavioursOff.Length; ++index)
-                    {
-                        var behaviour = managedBehavioursOff[index];
-                        if (!(behaviour == null))
-                        {
-                            if (isPlay)
-                            {
-                                managedBehavioursOriginalState[num + index] = behaviour.enabled;
-                                behaviour.enabled = false;
-                            }
-                            else
-                                behaviour.enabled = managedBehavioursOriginalState[index + num];
-                        }
-                    }
-                }
-            }
-
-            if (!manageGameObjects) return;
-            
-            var num1 = 0;
-            if (managedGameObjectsOn != null)
-            {
-                num1 = managedGameObjectsOn.Length;
-                for (var index = 0; index < managedGameObjectsOn.Length; ++index)
-                {
-                    var gameObject = managedGameObjectsOn[index];
-                    if (!(gameObject == null))
+                    var behaviour = ManagedBehavioursOn[index];
+                    if (!(behaviour == null))
                     {
                         if (isPlay)
                         {
-                            managedGameObjectsOriginalState[index] = gameObject.active;
-                            gameObject.active = true;
+                            ManagedBehavioursOriginalState[index] = behaviour.enabled;
+                            behaviour.enabled = true;
                         }
                         else
-                            gameObject.active = managedGameObjectsOriginalState[index];
+                            behaviour.enabled = ManagedBehavioursOriginalState[index];
                     }
                 }
             }
 
-            if (managedGameObjectsOff == null) return;
-            
-            for (var index = 0; index < managedGameObjectsOff.Length; ++index)
+            if (ManagedBehavioursOff != null)
             {
-                var gameObject = managedGameObjectsOff[index];
+                for (var index = 0; index < ManagedBehavioursOff.Length; ++index)
+                {
+                    var behaviour = ManagedBehavioursOff[index];
+                    if (!(behaviour == null))
+                    {
+                        if (isPlay)
+                        {
+                            ManagedBehavioursOriginalState[num + index] = behaviour.enabled;
+                            behaviour.enabled = false;
+                        }
+                        else
+                            behaviour.enabled = ManagedBehavioursOriginalState[index + num];
+                    }
+                }
+            }
+        }
+
+        if (!ManageGameObjects) return;
+
+        var num1 = 0;
+        if (ManagedGameObjectsOn != null)
+        {
+            num1 = ManagedGameObjectsOn.Length;
+            for (var index = 0; index < ManagedGameObjectsOn.Length; ++index)
+            {
+                var gameObject = ManagedGameObjectsOn[index];
                 if (!(gameObject == null))
                 {
                     if (isPlay)
                     {
-                        managedGameObjectsOriginalState[num1 + index] = gameObject.active;
-                        gameObject.active = false;
+                        managedGameObjectsOriginalState[index] = gameObject.active;
+                        gameObject.active = true;
                     }
                     else
-                        gameObject.active = managedGameObjectsOriginalState[index + num1];
+                        gameObject.active = managedGameObjectsOriginalState[index];
                 }
             }
         }
 
-        /// <summary>
-        /// Fills the given list with all the plugins inside this sequence tween,
-        /// while also looking for them recursively through inner sequences.
-        /// Used by <c>HOTween.GetPlugins</c>.
-        /// </summary>
-        internal abstract void FillPluginsList(List<ABSTweenPlugin> p_plugs);
+        if (ManagedGameObjectsOff == null) return;
+
+        for (var index = 0; index < ManagedGameObjectsOff.Length; ++index)
+        {
+            var gameObject = ManagedGameObjectsOff[index];
+            if (!(gameObject == null))
+            {
+                if (isPlay)
+                {
+                    managedGameObjectsOriginalState[num1 + index] = gameObject.active;
+                    gameObject.active = false;
+                }
+                else
+                    gameObject.active = managedGameObjectsOriginalState[index + num1];
+            }
+        }
     }
+
+    internal abstract void FillPluginsList(List<ABSTweenPlugin> plugs);
+}
+
 }

@@ -36,6 +36,7 @@ public class HOTweenDemoBrain : MonoBehaviour
             .Loops(-1, LoopType.Yoyo));
 
         HOTween.To(CubeTrans2, 4, "position", new Vector3(-3, 6, 0));
+        
         return;
 
         // Tween the second transform using full mode with parameters and linebreaks,
@@ -84,8 +85,8 @@ public class HOTweenDemoBrain : MonoBehaviour
         sequence.Append(HOTween.To(CubeTrans3, 1, new TweenParms().Prop("rotation", new Vector3(0, 360, 0))));
         // "Insert" lets you insert a tween where you want
         // (in this case we're having it start at half the sequence and last until the end)
-        sequence.Insert(sequence.duration * 0.5f,
-            HOTween.To(CubeTrans3.GetComponent<Renderer>().material, sequence.duration * 0.5f,
+        sequence.Insert(sequence.Duration * 0.5f,
+            HOTween.To(CubeTrans3.GetComponent<Renderer>().material, sequence.Duration * 0.5f,
                 new TweenParms().Prop("color", colorTo)));
         // Start the sequence animation
         sequence.Play();

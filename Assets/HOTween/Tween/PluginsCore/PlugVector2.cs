@@ -25,13 +25,13 @@ namespace Holoville.HOTween.Plugins.Core
         /// </summary>
         protected override object startVal
         {
-            get => _startVal;
+            get => StartVal;
             set
             {
-                if (tweenObj.isFrom && isRelative)
-                    _startVal = typedStartVal = typedEndVal + (Vector2)value;
+                if (TweenObj.isFrom && IsRelative)
+                    StartVal = typedStartVal = typedEndVal + (Vector2)value;
                 else
-                    _startVal = typedStartVal = (Vector2)value;
+                    StartVal = typedStartVal = (Vector2)value;
             }
         }
 
@@ -41,83 +41,83 @@ namespace Holoville.HOTween.Plugins.Core
         /// </summary>
         protected override object endVal
         {
-            get => _endVal;
-            set => _endVal = typedEndVal = (Vector2)value;
+            get => EndVal;
+            set => EndVal = typedEndVal = (Vector2)value;
         }
 
         /// <summary>
         /// Creates a new instance of this plugin using the main ease type.
         /// </summary>
-        /// <param name="p_endVal">
+        /// <param name="endVal">
         /// The <see cref="T:UnityEngine.Vector2" /> value to tween to.
         /// </param>
-        public PlugVector2(Vector2 p_endVal)
-            : base(p_endVal, false)
+        public PlugVector2(Vector2 endVal)
+            : base(endVal, false)
         {
         }
 
         /// <summary>Creates a new instance of this plugin.</summary>
-        /// <param name="p_endVal">
+        /// <param name="endVal">
         /// The <see cref="T:UnityEngine.Vector2" /> value to tween to.
         /// </param>
-        /// <param name="p_easeType">
+        /// <param name="easeType">
         /// The <see cref="T:Holoville.HOTween.EaseType" /> to use.
         /// </param>
-        public PlugVector2(Vector2 p_endVal, EaseType p_easeType)
-            : base(p_endVal, p_easeType, false)
+        public PlugVector2(Vector2 endVal, EaseType easeType)
+            : base(endVal, easeType, false)
         {
         }
 
         /// <summary>
         /// Creates a new instance of this plugin using the main ease type.
         /// </summary>
-        /// <param name="p_endVal">
+        /// <param name="endVal">
         /// The <see cref="T:UnityEngine.Vector2" /> value to tween to.
         /// </param>
-        /// <param name="p_isRelative">
+        /// <param name="isRelative">
         /// If <c>true</c>, the given end value is considered relative instead than absolute.
         /// </param>
-        public PlugVector2(Vector2 p_endVal, bool p_isRelative)
-            : base(p_endVal, p_isRelative)
+        public PlugVector2(Vector2 endVal, bool isRelative)
+            : base(endVal, isRelative)
         {
         }
 
         /// <summary>Creates a new instance of this plugin.</summary>
-        /// <param name="p_endVal">
+        /// <param name="endVal">
         /// The <see cref="T:UnityEngine.Vector2" /> value to tween to.
         /// </param>
-        /// <param name="p_easeType">
+        /// <param name="easeType">
         /// The <see cref="T:Holoville.HOTween.EaseType" /> to use.
         /// </param>
-        /// <param name="p_isRelative">
+        /// <param name="isRelative">
         /// If <c>true</c>, the given end value is considered relative instead than absolute.
         /// </param>
-        public PlugVector2(Vector2 p_endVal, EaseType p_easeType, bool p_isRelative)
-            : base(p_endVal, p_easeType, p_isRelative)
+        public PlugVector2(Vector2 endVal, EaseType easeType, bool isRelative)
+            : base(endVal, easeType, isRelative)
         {
         }
 
         /// <summary>Creates a new instance of this plugin.</summary>
-        /// <param name="p_endVal">
+        /// <param name="endVal">
         /// The <see cref="T:UnityEngine.Vector2" /> value to tween to.
         /// </param>
-        /// <param name="p_easeAnimCurve">
+        /// <param name="easeAnimCurve">
         /// The <see cref="T:UnityEngine.AnimationCurve" /> to use for easing.
         /// </param>
-        /// <param name="p_isRelative">
+        /// <param name="isRelative">
         /// If <c>true</c>, the given end value is considered relative instead than absolute.
         /// </param>
-        public PlugVector2(Vector2 p_endVal, AnimationCurve p_easeAnimCurve, bool p_isRelative)
-            : base(p_endVal, p_easeAnimCurve, p_isRelative)
+        public PlugVector2(Vector2 endVal, AnimationCurve easeAnimCurve, bool isRelative)
+            : base(endVal, easeAnimCurve, isRelative)
         {
         }
 
         /// <summary>
         /// Returns the speed-based duration based on the given speed x second.
         /// </summary>
-        protected override float GetSpeedBasedDuration(float p_speed)
+        protected override float GetSpeedBasedDuration(float speed)
         {
-            var num = changeVal.magnitude / p_speed;
+            var num = changeVal.magnitude / speed;
             if (num < 0.0)
                 num = -num;
             return num;
@@ -128,7 +128,7 @@ namespace Holoville.HOTween.Plugins.Core
         /// </summary>
         protected override void SetChangeVal()
         {
-            if (isRelative && !tweenObj.isFrom)
+            if (IsRelative && !TweenObj.isFrom)
             {
                 changeVal = typedEndVal;
                 endVal = typedStartVal + typedEndVal;
@@ -140,17 +140,17 @@ namespace Holoville.HOTween.Plugins.Core
         /// <summary>
         /// Sets the correct values in case of Incremental loop type.
         /// </summary>
-        /// <param name="p_diffIncr">
+        /// <param name="diffIncr">
         /// The difference from the previous loop increment.
         /// </param>
-        protected override void SetIncremental(int p_diffIncr) => typedStartVal += changeVal * p_diffIncr;
+        protected override void SetIncremental(int diffIncr) => typedStartVal += changeVal * diffIncr;
 
         /// <summary>Updates the tween.</summary>
-        /// <param name="p_totElapsed">The total elapsed time since startup.</param>
-        protected override void DoUpdate(float p_totElapsed)
+        /// <param name="totElapsed">The total elapsed time since startup.</param>
+        protected override void DoUpdate(float totElapsed)
         {
-            var num = ease(p_totElapsed, 0.0f, 1f, _duration, tweenObj.easeOvershootOrAmplitude, tweenObj.easePeriod);
-            if (tweenObj.pixelPerfect)
+            var num = Ease(totElapsed, 0.0f, 1f, Duration, TweenObj.easeOvershootOrAmplitude, TweenObj.easePeriod);
+            if (TweenObj.pixelPerfect)
                 SetValue(new Vector2((int)(typedStartVal.x + changeVal.x * (double)num),
                     (int)(typedStartVal.y + changeVal.y * (double)num)));
             else
