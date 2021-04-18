@@ -31,7 +31,7 @@ public class PlugSetFloat : ABSTweenPlugin
         get => StartVal;
         set
         {
-            if (TweenObj.isFrom && IsRelative)
+            if (TweenObj.IsFrom && IsRelative)
                 StartVal = _typedStartVal = _typedEndVal + Convert.ToSingle(value);
             else
                 StartVal = _typedStartVal = Convert.ToSingle(value);
@@ -82,7 +82,7 @@ public class PlugSetFloat : ABSTweenPlugin
         target is Material;
 
     protected override void DoUpdate(float totElapsed) => SetValue(Ease(totElapsed, _typedStartVal, _changeVal,
-        Duration, TweenObj.easeOvershootOrAmplitude, TweenObj.easePeriod));
+        Duration, TweenObj.EaseOvershootOrAmplitude, TweenObj.EasePeriod));
 
     protected override float GetSpeedBasedDuration(float speed)
     {
@@ -94,7 +94,7 @@ public class PlugSetFloat : ABSTweenPlugin
 
     protected override void SetChangeVal()
     {
-        if (IsRelative && !TweenObj.isFrom)
+        if (IsRelative && !TweenObj.IsFrom)
         {
             _changeVal = _typedEndVal;
             endVal = (float)(_typedStartVal + (double)_typedEndVal);
@@ -106,9 +106,9 @@ public class PlugSetFloat : ABSTweenPlugin
     protected override void SetIncremental(int diffIncr) => _typedStartVal += _changeVal * diffIncr;
 
     protected override void SetValue(object value) =>
-        ((Material)TweenObj.target).SetFloat(_floatName, Convert.ToSingle(value));
+        ((Material)TweenObj.Target).SetFloat(_floatName, Convert.ToSingle(value));
 
-    protected override object GetValue() => ((Material)TweenObj.target).GetFloat(_floatName);
+    protected override object GetValue() => ((Material)TweenObj.Target).GetFloat(_floatName);
 }
 
 }

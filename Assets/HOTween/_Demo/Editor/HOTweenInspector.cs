@@ -153,8 +153,8 @@ public class HOTweenInspector : UnityEditor.Editor
     }
 
     private void DrawInfo(TweenInfo twInfo) => GUILayout.Label(
-        "Id: " + (twInfo.tween.id != "" ? twInfo.tween.id : (object)"-") + ", Loops: " +
-        twInfo.tween.completedLoops + "/" + twInfo.tween.loops, HOGUIStyle.LabelSmallStyle);
+        "Id: " + (twInfo.tween.Id != "" ? twInfo.tween.Id : (object)"-") + ", Loops: " +
+        twInfo.tween.CompletedLoops + "/" + twInfo.tween.Loops, HOGUIStyle.LabelSmallStyle);
 
     private void DrawTargetButtons(TweenInfo twInfo, TweenGroup twGroup)
     {

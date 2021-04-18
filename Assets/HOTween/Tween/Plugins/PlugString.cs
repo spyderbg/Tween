@@ -25,7 +25,7 @@ public class PlugString : ABSTweenPlugin
         get => StartVal;
         set
         {
-            if (TweenObj.isFrom && IsRelative)
+            if (TweenObj.IsFrom && IsRelative)
                 StartVal = _typedStartVal = _typedEndVal + (value == null ? "" : value.ToString());
             else
                 StartVal = _typedStartVal = value == null ? "" : value.ToString();
@@ -86,7 +86,7 @@ public class PlugString : ABSTweenPlugin
 
     protected override void DoUpdate(float totElapsed)
     {
-        var num = (int)Math.Round(Ease(totElapsed, 0.0f, _changeVal, Duration, TweenObj.easeOvershootOrAmplitude, TweenObj.easePeriod));
+        var num = (int)Math.Round(Ease(totElapsed, 0.0f, _changeVal, Duration, TweenObj.EaseOvershootOrAmplitude, TweenObj.EasePeriod));
         
         SetValue(!IsRelative
             ? _typedEndVal.Substring(0, num) + (num >= (double)_changeVal || num >= _typedStartVal.Length

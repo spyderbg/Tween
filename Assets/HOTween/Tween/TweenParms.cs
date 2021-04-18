@@ -71,38 +71,38 @@ public class TweenParms : ABSTweenComponentParms
         InitializeOwner(tweenObj);
         if (speedBased && !easeSet)
             easeType = EaseType.Linear;
-        tweenObj._pixelPerfect = pixelPerfect;
-        tweenObj._speedBased = speedBased;
-        tweenObj._easeType = easeType;
-        tweenObj._easeAnimationCurve = easeAnimCurve;
-        tweenObj._easeOvershootOrAmplitude = easeOvershootOrAmplitude;
-        tweenObj._easePeriod = easePeriod;
-        tweenObj._delay = tweenObj.delayCount = delay;
-        tweenObj.isFrom = isFrom;
-        tweenObj.onPluginOverwritten = onPluginOverwritten;
-        tweenObj.onPluginOverwrittenWParms = onPluginOverwrittenWParms;
-        tweenObj.onPluginOverwrittenParms = onPluginOverwrittenParms;
-        tweenObj.plugins = new List<ABSTweenPlugin>();
+        tweenObj.PixelPerfect = pixelPerfect;
+        tweenObj.SpeedBased = speedBased;
+        tweenObj.EaseTypeVal = easeType;
+        tweenObj.EaseAnimationCurveVal = easeAnimCurve;
+        tweenObj.EaseOvershootOrAmplitude = easeOvershootOrAmplitude;
+        tweenObj.EasePeriod = easePeriod;
+        tweenObj.Delay = tweenObj.DelayCountVal = delay;
+        tweenObj.IsFrom = isFrom;
+        tweenObj.OnPluginOverwritten = onPluginOverwritten;
+        tweenObj.OnPluginOverwrittenWParms = onPluginOverwrittenWParms;
+        tweenObj.OnPluginOverwrittenParms = onPluginOverwrittenParms;
+        tweenObj.Plugins = new List<ABSTweenPlugin>();
         var type = target.GetType();
         FieldInfo fieldInfo = null;
         var count = propDatas.Count;
         for (var index = 0; index < count; ++index)
         {
             var propData = propDatas[index];
-            var property = type.GetProperty(propData.propName);
+            var property = type.GetProperty(propData.PropName);
             if (property == null)
             {
-                fieldInfo = type.GetField(propData.propName);
+                fieldInfo = type.GetField(propData.PropName);
                 if (fieldInfo == null)
                 {
-                    TweenWarning.Log("\"" + target + "." + propData.propName +
+                    TweenWarning.Log("\"" + target + "." + propData.PropName +
                                      "\" is missing, static, or not public. The tween for this property will not be created.");
                     continue;
                 }
             }
 
             ABSTweenPlugin absTweenPlugin;
-            if (propData.endValOrPlugin is ABSTweenPlugin endValOrPlugin2)
+            if (propData.EndValOrPlugin is ABSTweenPlugin endValOrPlugin2)
             {
                 absTweenPlugin = endValOrPlugin2;
                 if (absTweenPlugin.ValidateTarget(target))
@@ -129,77 +129,77 @@ public class TweenParms : ABSTweenComponentParms
                         : ""))
                 {
                     case "Vector2":
-                        if (ValidateValue(propData.endValOrPlugin, PlugVector2.validValueTypes))
+                        if (ValidateValue(propData.EndValOrPlugin, PlugVector2.validValueTypes))
                         {
-                            absTweenPlugin = new PlugVector2((Vector2)propData.endValOrPlugin, propData.isRelative);
+                            absTweenPlugin = new PlugVector2((Vector2)propData.EndValOrPlugin, propData.IsRelative);
                             break;
                         }
 
                         break;
                     case "Vector3":
-                        if (ValidateValue(propData.endValOrPlugin, PlugVector3.validValueTypes))
+                        if (ValidateValue(propData.EndValOrPlugin, PlugVector3.validValueTypes))
                         {
-                            absTweenPlugin = new PlugVector3((Vector3)propData.endValOrPlugin, propData.isRelative);
+                            absTweenPlugin = new PlugVector3((Vector3)propData.EndValOrPlugin, propData.IsRelative);
                             break;
                         }
 
                         break;
                     case "Vector4":
-                        if (ValidateValue(propData.endValOrPlugin, PlugVector4.validValueTypes))
+                        if (ValidateValue(propData.EndValOrPlugin, PlugVector4.validValueTypes))
                         {
-                            absTweenPlugin = new PlugVector4((Vector4)propData.endValOrPlugin, propData.isRelative);
+                            absTweenPlugin = new PlugVector4((Vector4)propData.EndValOrPlugin, propData.IsRelative);
                             break;
                         }
 
                         break;
                     case "Quaternion":
-                        if (ValidateValue(propData.endValOrPlugin, PlugQuaternion.ValidValueTypes))
+                        if (ValidateValue(propData.EndValOrPlugin, PlugQuaternion.ValidValueTypes))
                         {
-                            absTweenPlugin = !(propData.endValOrPlugin is Vector3)
-                                ? new PlugQuaternion((Quaternion)propData.endValOrPlugin, propData.isRelative)
-                                : (ABSTweenPlugin)new PlugQuaternion((Vector3)propData.endValOrPlugin,
-                                    propData.isRelative);
+                            absTweenPlugin = !(propData.EndValOrPlugin is Vector3)
+                                ? new PlugQuaternion((Quaternion)propData.EndValOrPlugin, propData.IsRelative)
+                                : (ABSTweenPlugin)new PlugQuaternion((Vector3)propData.EndValOrPlugin,
+                                    propData.IsRelative);
                             break;
                         }
 
                         break;
                     case "Color":
-                        if (ValidateValue(propData.endValOrPlugin, PlugColor.validValueTypes))
+                        if (ValidateValue(propData.EndValOrPlugin, PlugColor.validValueTypes))
                         {
-                            absTweenPlugin = new PlugColor((Color)propData.endValOrPlugin, propData.isRelative);
+                            absTweenPlugin = new PlugColor((Color)propData.EndValOrPlugin, propData.IsRelative);
                             break;
                         }
 
                         break;
                     case "Color32":
-                        if (ValidateValue(propData.endValOrPlugin, PlugColor32.validValueTypes))
+                        if (ValidateValue(propData.EndValOrPlugin, PlugColor32.validValueTypes))
                         {
-                            absTweenPlugin = new PlugColor32((Color32)propData.endValOrPlugin, propData.isRelative);
+                            absTweenPlugin = new PlugColor32((Color32)propData.EndValOrPlugin, propData.IsRelative);
                             break;
                         }
 
                         break;
                     case "Rect":
-                        if (ValidateValue(propData.endValOrPlugin, PlugRect.validValueTypes))
+                        if (ValidateValue(propData.EndValOrPlugin, PlugRect.validValueTypes))
                         {
-                            absTweenPlugin = new PlugRect((Rect)propData.endValOrPlugin, propData.isRelative);
+                            absTweenPlugin = new PlugRect((Rect)propData.EndValOrPlugin, propData.IsRelative);
                             break;
                         }
 
                         break;
                     case "String":
-                        if (ValidateValue(propData.endValOrPlugin, PlugString.ValidValueTypes))
+                        if (ValidateValue(propData.EndValOrPlugin, PlugString.ValidValueTypes))
                         {
-                            absTweenPlugin = new PlugString(propData.endValOrPlugin.ToString(),
-                                propData.isRelative);
+                            absTweenPlugin = new PlugString(propData.EndValOrPlugin.ToString(),
+                                propData.IsRelative);
                             break;
                         }
 
                         break;
                     case "Int32":
-                        if (ValidateValue(propData.endValOrPlugin, PlugInt.validValueTypes))
+                        if (ValidateValue(propData.EndValOrPlugin, PlugInt.validValueTypes))
                         {
-                            absTweenPlugin = new PlugInt((int)propData.endValOrPlugin, propData.isRelative);
+                            absTweenPlugin = new PlugInt((int)propData.EndValOrPlugin, propData.IsRelative);
                             break;
                         }
 
@@ -207,14 +207,14 @@ public class TweenParms : ABSTweenComponentParms
                     default:
                         try
                         {
-                            absTweenPlugin = new PlugFloat(Convert.ToSingle(propData.endValOrPlugin),
-                                propData.isRelative);
+                            absTweenPlugin = new PlugFloat(Convert.ToSingle(propData.EndValOrPlugin),
+                                propData.IsRelative);
                             break;
                         }
                         catch (Exception ex)
                         {
                             TweenWarning.Log("No valid plugin for animating \"" + target + "." +
-                                             propData.propName + "\" (of type " +
+                                             propData.PropName + "\" (of type " +
                                              (property != null
                                                  ? property.PropertyType
                                                  : (object)fieldInfo.FieldType) +
@@ -225,14 +225,14 @@ public class TweenParms : ABSTweenComponentParms
 
                 if (absTweenPlugin == null)
                 {
-                    TweenWarning.Log("The end value set for \"" + target + "." + propData.propName +
+                    TweenWarning.Log("The end value set for \"" + target + "." + propData.PropName +
                                      "\" tween is invalid. The tween for this property will not be created.");
                     continue;
                 }
             }
 
-            absTweenPlugin.Init(tweenObj, propData.propName, easeType, type, property, fieldInfo);
-            tweenObj.plugins.Add(absTweenPlugin);
+            absTweenPlugin.Init(tweenObj, propData.PropName, easeType, type, property, fieldInfo);
+            tweenObj.Plugins.Add(absTweenPlugin);
         }
     }
 
@@ -307,39 +307,38 @@ public class TweenParms : ABSTweenComponentParms
 
     public TweenParms Prop(string propName, object endVal, bool isRelative)
     {
-        if (propDatas == null)
-            propDatas = new List<HOTPropData>();
+        propDatas ??= new List<HOTPropData>();
         propDatas.Add(new HOTPropData(propName, endVal, isRelative));
         return this;
     }
 
     public TweenParms Id(string id)
     {
-        base.id = id;
+        base.Id = id;
         return this;
     }
 
     public TweenParms IntId(int intId)
     {
-        base.intId = intId;
+        base.IntId = intId;
         return this;
     }
 
     public TweenParms AutoKill(bool active)
     {
-        autoKillOnComplete = active;
+        AutoKillOnComplete = active;
         return this;
     }
 
     public TweenParms UpdateType(UpdateType updateType)
     {
-        base.updateType = updateType;
+        base.UpdateType = updateType;
         return this;
     }
 
     public TweenParms TimeScale(float timeScale)
     {
-        base.timeScale = timeScale;
+        base.TimeScale = timeScale;
         return this;
     }
 
@@ -576,17 +575,18 @@ public class TweenParms : ABSTweenComponentParms
     private static bool ValidateValue(object val, Type[] validVals) =>
         Array.IndexOf<Type>(validVals, val.GetType()) != -1;
 
+    // ReSharper disable once InconsistentNaming
     private class HOTPropData
     {
-        public readonly string propName;
-        public readonly object endValOrPlugin;
-        public readonly bool isRelative;
+        public readonly string PropName;
+        public readonly object EndValOrPlugin;
+        public readonly bool IsRelative;
 
         public HOTPropData(string propName, object endValOrPlugin, bool isRelative)
         {
-            this.propName = propName;
-            this.endValOrPlugin = endValOrPlugin;
-            this.isRelative = isRelative;
+            PropName = propName;
+            EndValOrPlugin = endValOrPlugin;
+            IsRelative = isRelative;
         }
     }
 }

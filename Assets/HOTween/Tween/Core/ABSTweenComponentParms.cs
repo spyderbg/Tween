@@ -6,19 +6,19 @@ namespace Holoville.HOTween.Core
     public abstract class ABSTweenComponentParms
     {
         /// <summary>ID.</summary>
-        protected string id = "";
+        protected string Id = "";
 
         /// <summary>Int ID.</summary>
-        protected int intId = -1;
+        protected int IntId = -1;
 
         /// <summary>Auto kill on complete.</summary>
-        protected bool autoKillOnComplete = true;
+        protected bool AutoKillOnComplete = true;
 
         /// <summary>Update type.</summary>
-        protected UpdateType updateType = HOTween.kDefUpdateType;
+        protected UpdateType UpdateType = HOTween.kDefUpdateType;
 
         /// <summary>Time scale.</summary>
-        protected float timeScale = HOTween.kDefTimeScale;
+        protected float TimeScale = HOTween.kDefTimeScale;
 
         /// <summary>Loops</summary>
         protected int loops = 1;
@@ -122,61 +122,61 @@ namespace Holoville.HOTween.Core
         /// <summary>
         /// Initializes the given owner with the stored parameters.
         /// </summary>
-        /// <param name="p_owner">
+        /// <param name="owner">
         /// The <see cref="T:Holoville.HOTween.Core.ABSTweenComponent" /> to initialize.
         /// </param>
-        protected void InitializeOwner(ABSTweenComponent p_owner)
+        protected void InitializeOwner(ABSTweenComponent owner)
         {
-            p_owner._id = id;
-            p_owner._intId = intId;
-            p_owner._autoKillOnComplete = autoKillOnComplete;
-            p_owner._updateType = updateType;
-            p_owner._timeScale = timeScale;
-            p_owner._loops = loops;
-            p_owner._loopType = loopType;
-            p_owner._isPaused = isPaused;
-            p_owner.onStart = onStart;
-            p_owner.onStartWParms = onStartWParms;
-            p_owner.onStartParms = onStartParms;
-            p_owner.onUpdate = onUpdate;
-            p_owner.onUpdateWParms = onUpdateWParms;
-            p_owner.onUpdateParms = onUpdateParms;
-            p_owner.onPluginUpdated = onPluginUpdated;
-            p_owner.onPluginUpdatedWParms = onPluginUpdatedWParms;
-            p_owner.onPluginUpdatedParms = onPluginUpdatedParms;
-            p_owner.onPause = onPause;
-            p_owner.onPauseWParms = onPauseWParms;
-            p_owner.onPauseParms = onPauseParms;
-            p_owner.onPlay = onPlay;
-            p_owner.onPlayWParms = onPlayWParms;
-            p_owner.onPlayParms = onPlayParms;
-            p_owner.onRewinded = onRewinded;
-            p_owner.onRewindedWParms = onRewindedWParms;
-            p_owner.onRewindedParms = onRewindedParms;
-            p_owner.onStepComplete = onStepComplete;
-            p_owner.onStepCompleteWParms = onStepCompleteWParms;
-            p_owner.onStepCompleteParms = onStepCompleteParms;
-            p_owner.onComplete = onComplete;
-            p_owner.onCompleteWParms = onCompleteWParms;
-            p_owner.onCompleteParms = onCompleteParms;
-            p_owner.ManageBehaviours = manageBehaviours;
-            p_owner.ManageGameObjects = manageGameObjects;
-            p_owner.ManagedBehavioursOn = managedBehavioursOn;
-            p_owner.ManagedBehavioursOff = managedBehavioursOff;
-            p_owner.ManagedGameObjectsOn = managedGameObjectsOn;
-            p_owner.ManagedGameObjectsOff = managedGameObjectsOff;
+            owner.Id = Id;
+            owner.IntId = IntId;
+            owner.AutoKillOnComplete = AutoKillOnComplete;
+            owner.UpdateType = UpdateType;
+            owner.TimeScale = TimeScale;
+            owner.LoopsVal = loops;
+            owner.LoopType = loopType;
+            owner.IsPaused = isPaused;
+            owner.onStart = onStart;
+            owner.onStartWParms = onStartWParms;
+            owner.onStartParms = onStartParms;
+            owner.onUpdate = onUpdate;
+            owner.onUpdateWParms = onUpdateWParms;
+            owner.onUpdateParms = onUpdateParms;
+            owner.onPluginUpdated = onPluginUpdated;
+            owner.onPluginUpdatedWParms = onPluginUpdatedWParms;
+            owner.onPluginUpdatedParms = onPluginUpdatedParms;
+            owner.onPause = onPause;
+            owner.onPauseWParms = onPauseWParms;
+            owner.onPauseParms = onPauseParms;
+            owner.onPlay = onPlay;
+            owner.onPlayWParms = onPlayWParms;
+            owner.onPlayParms = onPlayParms;
+            owner.onRewinded = onRewinded;
+            owner.onRewindedWParms = onRewindedWParms;
+            owner.onRewindedParms = onRewindedParms;
+            owner.onStepComplete = onStepComplete;
+            owner.onStepCompleteWParms = onStepCompleteWParms;
+            owner.onStepCompleteParms = onStepCompleteParms;
+            owner.onComplete = onComplete;
+            owner.onCompleteWParms = onCompleteWParms;
+            owner.onCompleteParms = onCompleteParms;
+            owner.ManageBehaviours = manageBehaviours;
+            owner.ManageGameObjects = manageGameObjects;
+            owner.ManagedBehavioursOn = managedBehavioursOn;
+            owner.ManagedBehavioursOff = managedBehavioursOff;
+            owner.ManagedGameObjectsOn = managedGameObjectsOn;
+            owner.ManagedGameObjectsOff = managedGameObjectsOff;
             if (manageBehaviours)
             {
                 var length = (managedBehavioursOn != null ? managedBehavioursOn.Length : 0) +
                              (managedBehavioursOff != null ? managedBehavioursOff.Length : 0);
-                p_owner.ManagedBehavioursOriginalState = new bool[length];
+                owner.ManagedBehavioursOriginalState = new bool[length];
             }
 
             if (!manageGameObjects)
                 return;
             var length1 = (managedGameObjectsOn != null ? managedGameObjectsOn.Length : 0) +
                           (managedGameObjectsOff != null ? managedGameObjectsOff.Length : 0);
-            p_owner.managedGameObjectsOriginalState = new bool[length1];
+            owner.ManagedGameObjectsOriginalState = new bool[length1];
         }
     }
 }

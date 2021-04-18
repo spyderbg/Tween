@@ -26,7 +26,7 @@ public class PlugInt : ABSTweenPlugin
         get => StartVal;
         set
         {
-            if (TweenObj.isFrom && IsRelative)
+            if (TweenObj.IsFrom && IsRelative)
                 StartVal = _typedStartVal = _typedEndVal + Convert.ToSingle(value);
             else
                 StartVal = _typedStartVal = Convert.ToSingle(value);
@@ -74,7 +74,7 @@ public class PlugInt : ABSTweenPlugin
 
     protected override void SetChangeVal()
     {
-        if (IsRelative && !TweenObj.isFrom)
+        if (IsRelative && !TweenObj.IsFrom)
         {
             _changeVal = _typedEndVal;
             endVal = (float)(_typedStartVal + (double)_typedEndVal);
@@ -86,7 +86,7 @@ public class PlugInt : ABSTweenPlugin
     protected override void SetIncremental(int diffIncr) => _typedStartVal += _changeVal * diffIncr;
 
     protected override void DoUpdate(float totElapsed) => SetValue((float)Math.Round(Ease(totElapsed,
-        _typedStartVal, _changeVal, Duration, TweenObj.easeOvershootOrAmplitude, TweenObj.easePeriod)));
+        _typedStartVal, _changeVal, Duration, TweenObj.EaseOvershootOrAmplitude, TweenObj.EasePeriod)));
 }
 
 }

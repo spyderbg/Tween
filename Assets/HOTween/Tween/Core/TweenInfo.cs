@@ -10,11 +10,11 @@ public class TweenInfo
 
     public List<object> targets;
 
-    public bool isPaused => tween.isPaused;
+    public bool isPaused => tween.IsPaused;
 
-    public bool isComplete => tween.isComplete;
+    public bool isComplete => tween.IsComplete;
 
-    public bool isEnabled => tween.enabled;
+    public bool isEnabled => tween.Enabled;
 
     public TweenInfo(ABSTweenComponent tween)
     {

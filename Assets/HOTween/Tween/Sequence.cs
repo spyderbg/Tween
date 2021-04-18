@@ -1,7 +1,6 @@
 ﻿using Holoville.HOTween.Core;
 using Holoville.HOTween.Plugins.Core;
 using System.Collections.Generic;
-using Packages.Rider.Editor.UnitTesting;
 using UnityEngine;
 
 using TweenCallback = Holoville.HOTween.Core.TweenDelegate.TweenCallback;
@@ -11,25 +10,25 @@ namespace Holoville.HOTween {
 
 public class Sequence : ABSTweenComponent, ISequence
 {
-    private bool hasCallbacks;
-    private int prevIncrementalCompletedLoops;
-    private float prevElapsed;
-    private List<HOTSeqItem> items;
+    private bool _hasCallbacks;
+    private int _prevIncrementalCompletedLoops;
+    private float _prevElapsed;
+    private List<HOTSeqItem> _items;
 
-    internal override bool steadyIgnoreCallbacks
+    internal override bool SteadyIgnoreCallbacks
     {
-        get => _steadyIgnoreCallbacks;
+        get => SteadyIgnoreCallbacks;
         set
         {
-            _steadyIgnoreCallbacks = value;
-            if (items == null)
+            SteadyIgnoreCallbacks = value;
+            if (_items == null)
                 return;
-            var count = items.Count;
+            var count = _items.Count;
             for (var index = 0; index < count; ++index)
             {
-                var hotSeqItem = items[index];
-                if (hotSeqItem.twMember != null)
-                    hotSeqItem.twMember.steadyIgnoreCallbacks = value;
+                var hotSeqItem = _items[index];
+                if (hotSeqItem.TwMember != null)
+                    hotSeqItem.TwMember.SteadyIgnoreCallbacks = value;
             }
         }
     }
@@ -42,7 +41,7 @@ public class Sequence : ABSTweenComponent, ISequence
     public Sequence(SequenceParms parms)
     {
         parms?.InitializeSequence(this);
-        _isPaused = true;
+        IsPaused = true;
         HOTween.AddSequence(this);
     }
 
@@ -76,11 +75,11 @@ public class Sequence : ABSTweenComponent, ISequence
 
     private void InsertCallback(float time, TweenCallback callback, TweenCallbackWParms callbackWParms, params object[] callbackParms)
     {
-        hasCallbacks = true;
+        _hasCallbacks = true;
         var hotSeqItem = new HOTSeqItem(time, callback, callbackWParms, callbackParms);
-        if (items == null)
+        if (_items == null)
         {
-            items = new List<HOTSeqItem>()
+            _items = new List<HOTSeqItem>()
             {
                 hotSeqItem
             };
@@ -88,19 +87,19 @@ public class Sequence : ABSTweenComponent, ISequence
         else
         {
             var flag = false;
-            var count = items.Count;
+            var count = _items.Count;
             for (var index = 0; index < count; ++index)
             {
-                if (items[index].startTime >= (double)time)
+                if (_items[index].StartTime >= (double)time)
                 {
-                    items.Insert(index, hotSeqItem);
+                    _items.Insert(index, hotSeqItem);
                     flag = true;
                     break;
                 }
             }
 
             if (!flag)
-                items.Add(hotSeqItem);
+                _items.Add(hotSeqItem);
         }
 
         IsEmpty = false;
@@ -113,25 +112,25 @@ public class Sequence : ABSTweenComponent, ISequence
         Append(twMember, 0.0f);
 
     private float Append(IHOTweenComponent twMember, float pDuration)
-                                                                 {
-                                                                 if (items == null) return twMember == null ? Insert(0.0f, null, pDuration) : Insert(0.0f, twMember);
-                                                                 
-                                                                 if (twMember != null)
-                                                                 {
-                                                                 HOTween.RemoveFromTweens(twMember);
-                                                                 ((ABSTweenComponent)twMember).contSequence = this;
-                                                                 CheckSpeedBasedTween(twMember);
-                                                                 }
-                                                                 
-                                                                 var hotSeqItem = twMember != null
-                                                                 ? new HOTSeqItem(Duration, twMember as ABSTweenComponent)
-                                                                 : new HOTSeqItem(Duration, pDuration);
-                                                                 items.Add(hotSeqItem);
-                                                                 Duration += hotSeqItem.duration;
-                                                                 SetFullDuration();
-                                                                 IsEmpty = false;
-                                                                 return Duration;
-                                                                 }
+    {
+        if (_items == null) return twMember == null ? Insert(0.0f, null, pDuration) : Insert(0.0f, twMember);
+
+        if (twMember != null)
+        {
+            HOTween.RemoveFromTweens(twMember);
+            ((ABSTweenComponent)twMember).ContSequence = this;
+            CheckSpeedBasedTween(twMember);
+        }
+
+        var hotSeqItem = twMember != null
+            ? new HOTSeqItem(Duration, twMember as ABSTweenComponent)
+            : new HOTSeqItem(Duration, pDuration);
+        _items.Add(hotSeqItem);
+        Duration += hotSeqItem.Duration;
+        SetFullDuration();
+        IsEmpty = false;
+        return Duration;
+    }
 
     public float PrependInterval(float pDuration) =>
         Prepend(null, pDuration);
@@ -141,23 +140,23 @@ public class Sequence : ABSTweenComponent, ISequence
 
     private float Prepend(IHOTweenComponent twMember, float pDuration)
     {
-        if (items == null) return Insert(0.0f, twMember);
+        if (_items == null) return Insert(0.0f, twMember);
         
         if (twMember != null)
         {
             HOTween.RemoveFromTweens(twMember);
-            ((ABSTweenComponent)twMember).contSequence = this;
+            ((ABSTweenComponent)twMember).ContSequence = this;
             CheckSpeedBasedTween(twMember);
         }
 
         var hotSeqItem = twMember != null
             ? new HOTSeqItem(0.0f, twMember as ABSTweenComponent)
             : new HOTSeqItem(0.0f, pDuration);
-        var duration = hotSeqItem.duration;
-        var count = items.Count;
+        var duration = hotSeqItem.Duration;
+        var count = _items.Count;
         for (var index = 0; index < count; ++index)
-            items[index].startTime += duration;
-        items.Insert(0, hotSeqItem);
+            _items[index].StartTime += duration;
+        _items.Insert(0, hotSeqItem);
         Duration += duration;
         SetFullDuration();
         IsEmpty = false;
@@ -172,7 +171,7 @@ public class Sequence : ABSTweenComponent, ISequence
         if (twMember != null)
         {
             HOTween.RemoveFromTweens(twMember);
-            ((ABSTweenComponent)twMember).contSequence = this;
+            ((ABSTweenComponent)twMember).ContSequence = this;
             CheckSpeedBasedTween(twMember);
         }
 
@@ -180,33 +179,33 @@ public class Sequence : ABSTweenComponent, ISequence
             ? new HOTSeqItem(time, twMember as ABSTweenComponent)
             : new HOTSeqItem(time, pDuration);
             
-        if (items == null)
+        if (_items == null)
         {
-            items = new List<HOTSeqItem>()
+            _items = new List<HOTSeqItem>()
             {
                 hotSeqItem
             };
-            Duration = hotSeqItem.startTime + hotSeqItem.duration;
+            Duration = hotSeqItem.StartTime + hotSeqItem.Duration;
             SetFullDuration();
             IsEmpty = false;
             return Duration;
         }
 
         var flag = false;
-        var count = items.Count;
+        var count = _items.Count;
         for (var index = 0; index < count; ++index)
         {
-            if (items[index].startTime >= (double)time)
+            if (_items[index].StartTime >= (double)time)
             {
-                items.Insert(index, hotSeqItem);
+                _items.Insert(index, hotSeqItem);
                 flag = true;
                 break;
             }
         }
 
         if (!flag)
-            items.Add(hotSeqItem);
-        Duration = Mathf.Max(hotSeqItem.startTime + hotSeqItem.duration, Duration);
+            _items.Add(hotSeqItem);
+        Duration = Mathf.Max(hotSeqItem.StartTime + hotSeqItem.Duration, Duration);
         SetFullDuration();
         IsEmpty = false;
         return Duration;
@@ -216,28 +215,28 @@ public class Sequence : ABSTweenComponent, ISequence
     {
         Kill(false);
         Reset();
-        hasCallbacks = false;
-        prevIncrementalCompletedLoops = prevIncrementalCompletedLoops = 0;
+        _hasCallbacks = false;
+        _prevIncrementalCompletedLoops = _prevIncrementalCompletedLoops = 0;
         Destroyed = false;
         parms?.InitializeSequence(this);
-        _isPaused = true;
+        IsPaused = true;
     }
 
     internal override void Kill(bool autoRemoveFromHOTween)
     {
         if (Destroyed) return;
         
-        if (items != null)
+        if (_items != null)
         {
-            var count = items.Count;
+            var count = _items.Count;
             for (var index = 0; index < count; ++index)
             {
-                var hotSeqItem = items[index];
-                if (hotSeqItem.seqItemType == SeqItemType.Tween)
-                    hotSeqItem.twMember.Kill(false);
+                var hotSeqItem = _items[index];
+                if (hotSeqItem.SeqItemType == SeqItemType.Tween)
+                    hotSeqItem.TwMember.Kill(false);
             }
 
-            items = null;
+            _items = null;
         }
 
         base.Kill(autoRemoveFromHOTween);
@@ -256,13 +255,13 @@ public class Sequence : ABSTweenComponent, ISequence
 
     public override bool IsTweening(object target)
     {
-        if (!_enabled || items == null) return false;
+        if (!Enabled || _items == null) return false;
         
-        var count = items.Count;
+        var count = _items.Count;
         for (var index = 0; index < count; ++index)
         {
-            var hotSeqItem = items[index];
-            if (hotSeqItem.seqItemType == SeqItemType.Tween && hotSeqItem.twMember.IsTweening(target))
+            var hotSeqItem = _items[index];
+            if (hotSeqItem.SeqItemType == SeqItemType.Tween && hotSeqItem.TwMember.IsTweening(target))
                 return true;
         }
 
@@ -271,14 +270,14 @@ public class Sequence : ABSTweenComponent, ISequence
 
     public override bool IsTweening(string id)
     {
-        if (!_enabled || items == null) return false;
-        if (!_isPaused && _id == id) return true;
+        if (!Enabled || _items == null) return false;
+        if (!IsPaused && base.Id == id) return true;
         
-        var count = items.Count;
+        var count = _items.Count;
         for (var index = 0; index < count; ++index)
         {
-            var hotSeqItem = items[index];
-            if (hotSeqItem.seqItemType == SeqItemType.Tween && hotSeqItem.twMember.IsTweening(id))
+            var hotSeqItem = _items[index];
+            if (hotSeqItem.SeqItemType == SeqItemType.Tween && hotSeqItem.TwMember.IsTweening(id))
                 return true;
         }
 
@@ -287,14 +286,14 @@ public class Sequence : ABSTweenComponent, ISequence
 
     public override bool IsTweening(int id)
     {
-        if (!_enabled || items == null) return false;
-        if (!_isPaused && _intId == id) return true;
+        if (!Enabled || _items == null) return false;
+        if (!IsPaused && IntId == id) return true;
         
-        var count = items.Count;
+        var count = _items.Count;
         for (var index = 0; index < count; ++index)
         {
-            var hotSeqItem = items[index];
-            if (hotSeqItem.seqItemType == SeqItemType.Tween && hotSeqItem.twMember.IsTweening(id))
+            var hotSeqItem = _items[index];
+            if (hotSeqItem.SeqItemType == SeqItemType.Tween && hotSeqItem.TwMember.IsTweening(id))
                 return true;
         }
 
@@ -303,13 +302,13 @@ public class Sequence : ABSTweenComponent, ISequence
 
     public override bool IsLinkedTo(object target)
     {
-        if (items == null) return false;
+        if (_items == null) return false;
         
-        var count = items.Count;
+        var count = _items.Count;
         for (var index = 0; index < count; ++index)
         {
-            var hotSeqItem = items[index];
-            if (hotSeqItem.seqItemType == SeqItemType.Tween && hotSeqItem.twMember.IsLinkedTo(target))
+            var hotSeqItem = _items[index];
+            if (hotSeqItem.SeqItemType == SeqItemType.Tween && hotSeqItem.TwMember.IsLinkedTo(target))
                 return true;
         }
 
@@ -318,15 +317,15 @@ public class Sequence : ABSTweenComponent, ISequence
 
     public override List<object> GetTweenTargets()
     {
-        if (items == null)
+        if (_items == null)
             return null;
         var objectList = new List<object>();
-        var count = items.Count;
+        var count = _items.Count;
         for (var index = 0; index < count; ++index)
         {
-            var hotSeqItem = items[index];
-            if (hotSeqItem.seqItemType == SeqItemType.Tween)
-                objectList.AddRange(hotSeqItem.twMember.GetTweenTargets());
+            var hotSeqItem = _items[index];
+            if (hotSeqItem.SeqItemType == SeqItemType.Tween)
+                objectList.AddRange(hotSeqItem.TwMember.GetTweenTargets());
         }
 
         return objectList;
@@ -335,19 +334,19 @@ public class Sequence : ABSTweenComponent, ISequence
     public List<Tweener> GetTweenersByTarget(object target)
     {
         var tweenerList = new List<Tweener>();
-        var count = items.Count;
+        var count = _items.Count;
         for (var index = 0; index < count; ++index)
         {
-            var hotSeqItem = items[index];
-            if (hotSeqItem.seqItemType == SeqItemType.Tween)
+            var hotSeqItem = _items[index];
+            if (hotSeqItem.SeqItemType == SeqItemType.Tween)
             {
-                if (hotSeqItem.twMember is Tweener twMember3)
+                if (hotSeqItem.TwMember is Tweener twMember3)
                 {
-                    if (twMember3.target == target)
+                    if (twMember3.Target == target)
                         tweenerList.Add(twMember3);
                 }
                 else
-                    tweenerList.AddRange(((Sequence)hotSeqItem.twMember).GetTweenersByTarget(target));
+                    tweenerList.AddRange(((Sequence)hotSeqItem.TwMember).GetTweenersByTarget(target));
             }
         }
 
@@ -357,14 +356,14 @@ public class Sequence : ABSTweenComponent, ISequence
     internal override List<IHOTweenComponent> GetTweensById(string id)
     {
         var hoTweenComponentList = new List<IHOTweenComponent>();
-        if (base.id == id)
+        if (base.Id == id)
             hoTweenComponentList.Add(this);
-        var count = items.Count;
+        var count = _items.Count;
         for (var index = 0; index < count; ++index)
         {
-            var hotSeqItem = items[index];
-            if (hotSeqItem.seqItemType == SeqItemType.Tween)
-                hoTweenComponentList.AddRange(hotSeqItem.twMember.GetTweensById(id));
+            var hotSeqItem = _items[index];
+            if (hotSeqItem.SeqItemType == SeqItemType.Tween)
+                hoTweenComponentList.AddRange(hotSeqItem.TwMember.GetTweensById(id));
         }
 
         return hoTweenComponentList;
@@ -373,14 +372,14 @@ public class Sequence : ABSTweenComponent, ISequence
     internal override List<IHOTweenComponent> GetTweensByIntId(int intId)
     {
         var hoTweenComponentList = new List<IHOTweenComponent>();
-        if (base.intId == intId)
+        if (base.IntId == intId)
             hoTweenComponentList.Add(this);
-        var count = items.Count;
+        var count = _items.Count;
         for (var index = 0; index < count; ++index)
         {
-            var hotSeqItem = items[index];
-            if (hotSeqItem.seqItemType == SeqItemType.Tween)
-                hoTweenComponentList.AddRange(hotSeqItem.twMember.GetTweensByIntId(intId));
+            var hotSeqItem = _items[index];
+            if (hotSeqItem.SeqItemType == SeqItemType.Tween)
+                hoTweenComponentList.AddRange(hotSeqItem.TwMember.GetTweensByIntId(intId));
         }
 
         return hoTweenComponentList;
@@ -388,46 +387,46 @@ public class Sequence : ABSTweenComponent, ISequence
 
     internal void Remove(ABSTweenComponent tween)
     {
-        if (items == null) return;
+        if (_items == null) return;
         
-        var count = items.Count;
+        var count = _items.Count;
         for (var index = 0; index < count; ++index)
         {
-            var hotSeqItem = items[index];
-            if (hotSeqItem.seqItemType == SeqItemType.Tween && hotSeqItem.twMember == tween)
+            var hotSeqItem = _items[index];
+            if (hotSeqItem.SeqItemType == SeqItemType.Tween && hotSeqItem.TwMember == tween)
             {
-                items.RemoveAt(index);
+                _items.RemoveAt(index);
                 break;
             }
         }
 
-        if (items.Count != 0) return;
+        if (_items.Count != 0) return;
         
-        if (isSequenced)
-            contSequence.Remove(this);
-        Kill(!isSequenced);
+        if (IsSequenced)
+            ContSequence.Remove(this);
+        Kill(!IsSequenced);
     }
 
     internal override void Complete(bool autoRemoveFromHOTween)
     {
-        if (!_enabled || items == null || _loops < 0) return;
+        if (!Enabled || _items == null || LoopsVal < 0) return;
         
         FullElapsed = FullDuration;
         Update(0.0f, true);
         
-        if (!_autoKillOnComplete) return;
+        if (!AutoKillOnComplete) return;
         
         Kill(autoRemoveFromHOTween);
     }
 
     internal override bool Update(float shortElapsed, bool forceUpdate, bool isStartupIteration, bool ignoreCallbacks)
     {
-        if (Destroyed || items == null) return true;
-        if (!_enabled) return false;
-        if (IsComplete && !IsReversed && !forceUpdate) return true;
-        if (FullElapsed == 0.0 && IsReversed && !forceUpdate || _isPaused && !forceUpdate) return false;
+        if (Destroyed || _items == null) return true;
+        if (!Enabled) return false;
+        if (base.IsComplete && !IsReversed && !forceUpdate) return true;
+        if (FullElapsed == 0.0 && IsReversed && !forceUpdate || IsPaused && !forceUpdate) return false;
         
-        base.ignoreCallbacks = isStartupIteration || ignoreCallbacks;
+        base.IgnoreCallbacksVal = isStartupIteration || ignoreCallbacks;
         
         if (!IsReversed)
         {
@@ -447,63 +446,63 @@ public class Sequence : ABSTweenComponent, ISequence
         Startup();
         if (!HasStarted)
             OnStart();
-        var isComplete = IsComplete;
+        var isComplete = base.IsComplete;
         var flag1 = !IsReversed && !isComplete && Elapsed >= (double)Duration;
         SetLoops();
         SetElapsed();
-        IsComplete = !IsReversed && _loops >= 0 && CompletedLoops >= _loops;
-        var flag2 = !isComplete && IsComplete;
-        if (_loopType == LoopType.Incremental)
+        base.IsComplete = !IsReversed && LoopsVal >= 0 && CompletedLoops >= LoopsVal;
+        var flag2 = !isComplete && base.IsComplete;
+        if (LoopType == LoopType.Incremental)
         {
-            if (prevIncrementalCompletedLoops != CompletedLoops)
+            if (_prevIncrementalCompletedLoops != CompletedLoops)
             {
-                var completedLoops = CompletedLoops;
-                if (_loops != -1 && completedLoops >= _loops)
+                var completedLoops = base.CompletedLoops;
+                if (LoopsVal != -1 && completedLoops >= LoopsVal)
                     --completedLoops;
-                var diffIncr = completedLoops - prevIncrementalCompletedLoops;
+                var diffIncr = completedLoops - _prevIncrementalCompletedLoops;
                 if (diffIncr != 0)
                 {
                     SetIncremental(diffIncr);
-                    prevIncrementalCompletedLoops = completedLoops;
+                    _prevIncrementalCompletedLoops = completedLoops;
                 }
             }
         }
-        else if (prevIncrementalCompletedLoops != 0)
+        else if (_prevIncrementalCompletedLoops != 0)
         {
-            SetIncremental(-prevIncrementalCompletedLoops);
-            prevIncrementalCompletedLoops = 0;
+            SetIncremental(-_prevIncrementalCompletedLoops);
+            _prevIncrementalCompletedLoops = 0;
         }
 
-        var count = items.Count;
-        if (hasCallbacks && !_isPaused)
+        var count = _items.Count;
+        if (_hasCallbacks && !IsPaused)
         {
             List<HOTSeqItem> hotSeqItemList = null;
             for (var index = 0; index < count; ++index)
             {
-                var hotSeqItem = items[index];
-                if (hotSeqItem.seqItemType == SeqItemType.Callback)
+                var hotSeqItem = _items[index];
+                if (hotSeqItem.SeqItemType == SeqItemType.Callback)
                 {
                     var flag3 = PrevCompletedLoops != CompletedLoops;
-                    var flag4 = (_loopType == LoopType.Yoyo || _loopType == LoopType.YoyoInverse) &&
+                    var flag4 = (LoopType == LoopType.Yoyo || LoopType == LoopType.YoyoInverse) &&
                                 (IsLoopingBack && !flag3 || flag3 && !IsLoopingBack);
                     var num1 = IsLoopingBack ? Duration - Elapsed : Elapsed;
-                    var num2 = IsLoopingBack ? Duration - prevElapsed : prevElapsed;
+                    var num2 = IsLoopingBack ? Duration - _prevElapsed : _prevElapsed;
                     if (!IsLoopingBack
                         ? !flag4 &&
-                          (hotSeqItem.startTime <= (double)num1 || CompletedLoops != PrevCompletedLoops) &&
-                          hotSeqItem.startTime >= (double)num2 ||
-                          hotSeqItem.startTime <= (double)num1 &&
-                          (!IsComplete && CompletedLoops != PrevCompletedLoops ||
-                           hotSeqItem.startTime >= (double)num2)
+                          (hotSeqItem.StartTime <= (double)num1 || CompletedLoops != PrevCompletedLoops) &&
+                          hotSeqItem.StartTime >= (double)num2 ||
+                          hotSeqItem.StartTime <= (double)num1 &&
+                          (!base.IsComplete && CompletedLoops != PrevCompletedLoops ||
+                           hotSeqItem.StartTime >= (double)num2)
                         : flag4 &&
-                        (hotSeqItem.startTime >= (double)num1 || CompletedLoops != PrevCompletedLoops) &&
-                        hotSeqItem.startTime <= (double)num2 || hotSeqItem.startTime >= (double)num1 &&
-                        (!IsComplete && CompletedLoops != PrevCompletedLoops ||
-                         hotSeqItem.startTime <= (double)num2))
+                        (hotSeqItem.StartTime >= (double)num1 || CompletedLoops != PrevCompletedLoops) &&
+                        hotSeqItem.StartTime <= (double)num2 || hotSeqItem.StartTime >= (double)num1 &&
+                        (!base.IsComplete && CompletedLoops != PrevCompletedLoops ||
+                         hotSeqItem.StartTime <= (double)num2))
                     {
                         if (hotSeqItemList == null)
                             hotSeqItemList = new List<HOTSeqItem>();
-                        if (hotSeqItem.startTime > (double)num1)
+                        if (hotSeqItem.StartTime > (double)num1)
                             hotSeqItemList.Insert(0, hotSeqItem);
                         else
                             hotSeqItemList.Add(hotSeqItem);
@@ -515,10 +514,10 @@ public class Sequence : ABSTweenComponent, ISequence
             {
                 foreach (var hotSeqItem in hotSeqItemList)
                 {
-                    if (hotSeqItem.callback != null)
-                        hotSeqItem.callback();
-                    else if (hotSeqItem.callbackWParms != null)
-                        hotSeqItem.callbackWParms(new TweenEvent(this, hotSeqItem.callbackParms));
+                    if (hotSeqItem.Callback != null)
+                        hotSeqItem.Callback();
+                    else if (hotSeqItem.CallbackWParms != null)
+                        hotSeqItem.CallbackWParms(new TweenEvent(this, hotSeqItem.CallbackParms));
                 }
             }
         }
@@ -528,25 +527,25 @@ public class Sequence : ABSTweenComponent, ISequence
             var num = !IsLoopingBack ? Elapsed : Duration - Elapsed;
             for (var index = count - 1; index > -1; --index)
             {
-                var hotSeqItem = items[index];
-                if (hotSeqItem.seqItemType == SeqItemType.Tween && hotSeqItem.startTime > (double)num)
+                var hotSeqItem = _items[index];
+                if (hotSeqItem.SeqItemType == SeqItemType.Tween && hotSeqItem.StartTime > (double)num)
                 {
-                    if (hotSeqItem.twMember.Duration > 0.0)
-                        hotSeqItem.twMember.GoTo(num - hotSeqItem.startTime, forceUpdate, true);
+                    if (hotSeqItem.TwMember.Duration > 0.0)
+                        hotSeqItem.TwMember.GoTo(num - hotSeqItem.StartTime, forceUpdate, true);
                     else
-                        hotSeqItem.twMember.Rewind();
+                        hotSeqItem.TwMember.Rewind();
                 }
             }
 
             for (var index = 0; index < count; ++index)
             {
-                var hotSeqItem = items[index];
-                if (hotSeqItem.seqItemType == SeqItemType.Tween && hotSeqItem.startTime <= (double)num)
+                var hotSeqItem = _items[index];
+                if (hotSeqItem.SeqItemType == SeqItemType.Tween && hotSeqItem.StartTime <= (double)num)
                 {
-                    if (hotSeqItem.twMember.Duration > 0.0)
-                        hotSeqItem.twMember.GoTo(num - hotSeqItem.startTime, forceUpdate);
+                    if (hotSeqItem.TwMember.Duration > 0.0)
+                        hotSeqItem.TwMember.GoTo(num - hotSeqItem.StartTime, forceUpdate);
                     else
-                        hotSeqItem.twMember.Complete();
+                        hotSeqItem.TwMember.Complete();
                 }
             }
         }
@@ -554,9 +553,9 @@ public class Sequence : ABSTweenComponent, ISequence
         {
             for (var index = count - 1; index > -1; --index)
             {
-                var hotSeqItem = items[index];
-                if (hotSeqItem.seqItemType == SeqItemType.Tween)
-                    hotSeqItem.twMember.Complete();
+                var hotSeqItem = _items[index];
+                if (hotSeqItem.SeqItemType == SeqItemType.Tween)
+                    hotSeqItem.TwMember.Complete();
             }
 
             if (!isComplete)
@@ -568,9 +567,9 @@ public class Sequence : ABSTweenComponent, ISequence
             OnUpdate();
             if (FullElapsed == 0.0)
             {
-                if (!_isPaused)
+                if (!IsPaused)
                 {
-                    _isPaused = true;
+                    IsPaused = true;
                     OnPause();
                 }
 
@@ -580,9 +579,9 @@ public class Sequence : ABSTweenComponent, ISequence
 
         if (flag2)
         {
-            if (!_isPaused)
+            if (!IsPaused)
             {
-                _isPaused = true;
+                IsPaused = true;
                 OnPause();
             }
 
@@ -591,8 +590,8 @@ public class Sequence : ABSTweenComponent, ISequence
         else if (flag1)
             OnStepComplete();
 
-        base.ignoreCallbacks = false;
-        prevElapsed = Elapsed;
+        base.IgnoreCallbacksVal = false;
+        _prevElapsed = Elapsed;
         PrevFullElapsed = FullElapsed;
         PrevCompletedLoops = CompletedLoops;
         return flag2;
@@ -600,18 +599,18 @@ public class Sequence : ABSTweenComponent, ISequence
 
     internal override void SetIncremental(int diffIncr)
     {
-        var count = items.Count;
+        var count = _items.Count;
         for (var index = 0; index < count; ++index)
         {
-            var hotSeqItem = items[index];
-            if (hotSeqItem.seqItemType == SeqItemType.Tween)
-                hotSeqItem.twMember.SetIncremental(diffIncr);
+            var hotSeqItem = _items[index];
+            if (hotSeqItem.SeqItemType == SeqItemType.Tween)
+                hotSeqItem.TwMember.SetIncremental(diffIncr);
         }
     }
 
     protected override bool GoTo(float time, bool play, bool forceUpdate, bool ignoreCallbacks)
     {
-        if (!_enabled) return false;
+        if (!Enabled) return false;
         
         if (time > (double)FullDuration)
             time = FullDuration;
@@ -634,7 +633,7 @@ public class Sequence : ABSTweenComponent, ISequence
 
     private void Rewind(bool play)
     {
-        if (!_enabled || items == null) return;
+        if (!Enabled || _items == null) return;
         
         Startup();
         if (!HasStarted)
@@ -643,11 +642,11 @@ public class Sequence : ABSTweenComponent, ISequence
         IsLoopingBack = false;
         CompletedLoops = 0;
         FullElapsed = Elapsed = 0.0f;
-        for (var index = items.Count - 1; index > -1; --index)
+        for (var index = _items.Count - 1; index > -1; --index)
         {
-            var hotSeqItem = items[index];
-            if (hotSeqItem.seqItemType == SeqItemType.Tween)
-                hotSeqItem.twMember.Rewind();
+            var hotSeqItem = _items[index];
+            if (hotSeqItem.SeqItemType == SeqItemType.Tween)
+                hotSeqItem.TwMember.Rewind();
         }
 
         if (FullElapsed != (double)PrevFullElapsed)
@@ -666,39 +665,39 @@ public class Sequence : ABSTweenComponent, ISequence
 
     private void TweenStartupIteration()
     {
-        var flag = !steadyIgnoreCallbacks;
+        var flag = !SteadyIgnoreCallbacks;
         if (flag)
-            steadyIgnoreCallbacks = true;
-        var count = items.Count;
+            SteadyIgnoreCallbacks = true;
+        var count = _items.Count;
         for (var index = 0; index < count; ++index)
         {
-            var hotSeqItem = items[index];
-            if (hotSeqItem.seqItemType == SeqItemType.Tween)
-                hotSeqItem.twMember.Update(hotSeqItem.twMember.Duration, true, true);
+            var hotSeqItem = _items[index];
+            if (hotSeqItem.SeqItemType == SeqItemType.Tween)
+                hotSeqItem.TwMember.Update(hotSeqItem.TwMember.Duration, true, true);
         }
 
         for (var index = count - 1; index > -1; --index)
         {
-            var hotSeqItem = items[index];
-            if (hotSeqItem.seqItemType == SeqItemType.Tween)
-                hotSeqItem.twMember.Rewind();
+            var hotSeqItem = _items[index];
+            if (hotSeqItem.SeqItemType == SeqItemType.Tween)
+                hotSeqItem.TwMember.Rewind();
         }
 
         if (!flag) return;
         
-        steadyIgnoreCallbacks = false;
+        SteadyIgnoreCallbacks = false;
     }
 
     private static void CheckSpeedBasedTween(IHOTweenComponent twMember)
     {
-        if (!(twMember is Tweener tweener) || !tweener._speedBased) return;
+        if (!(twMember is Tweener tweener) || !tweener.SpeedBased) return;
         
         tweener.ForceSetSpeedBasedDuration();
     }
 
     protected override void Startup()
     {
-        if (startupDone) return;
+        if (StartupDone) return;
         
         TweenStartupIteration();
         base.Startup();
@@ -706,18 +705,18 @@ public class Sequence : ABSTweenComponent, ISequence
 
     internal override void FillPluginsList(List<ABSTweenPlugin> plugs)
     {
-        if (items == null)
+        if (_items == null)
             return;
-        var count = items.Count;
+        var count = _items.Count;
         for (var index = 0; index < count; ++index)
         {
-            var hotSeqItem = items[index];
-            if (hotSeqItem.twMember != null)
+            var hotSeqItem = _items[index];
+            if (hotSeqItem.TwMember != null)
             {
-                if (hotSeqItem.twMember is Sequence twMember3)
+                if (hotSeqItem.TwMember is Sequence twMember3)
                     twMember3.FillPluginsList(plugs);
                 else
-                    hotSeqItem.twMember.FillPluginsList(plugs);
+                    hotSeqItem.TwMember.FillPluginsList(plugs);
             }
         }
     }
@@ -729,40 +728,42 @@ public class Sequence : ABSTweenComponent, ISequence
         Callback,
     }
 
+    // ReSharper disable once InconsistentNaming
     private class HOTSeqItem
     {
-        public readonly SeqItemType seqItemType;
-        public readonly TweenCallback callback;
-        public readonly TweenCallbackWParms callbackWParms;
-        public readonly object[] callbackParms;
-        public float startTime;
-        private readonly float Duration;
-        public readonly ABSTweenComponent twMember;
+        public readonly SeqItemType SeqItemType;
+        public readonly TweenCallback Callback;
+        public readonly TweenCallbackWParms CallbackWParms;
+        public readonly object[] CallbackParms;
+        public float StartTime;
+        public readonly ABSTweenComponent TwMember;
+        
+        private readonly float _duration;
 
-        public float duration => twMember == null ? Duration : twMember.Duration;
+        public float Duration => TwMember?.Duration ?? _duration;
 
         public HOTSeqItem(float startTime, ABSTweenComponent twMember)
         {
-            this.startTime = startTime;
-            this.twMember = twMember;
-            this.twMember.autoKillOnComplete = false;
-            seqItemType = SeqItemType.Tween;
+            StartTime = startTime;
+            TwMember = twMember;
+            TwMember.AutoKillOnComplete = false;
+            SeqItemType = SeqItemType.Tween;
         }
 
         public HOTSeqItem(float startTime, float pDuration)
         {
-            seqItemType = SeqItemType.Interval;
-            this.startTime = startTime;
-            Duration = pDuration;
+            SeqItemType = SeqItemType.Interval;
+            StartTime = startTime;
+            _duration = pDuration;
         }
 
         public HOTSeqItem(float startTime, TweenCallback callback, TweenCallbackWParms callbackWParms, params object[] callbackParms)
         {
-            seqItemType = SeqItemType.Callback;
-            this.startTime = startTime;
-            this.callback = callback;
-            this.callbackWParms = callbackWParms;
-            this.callbackParms = callbackParms;
+            SeqItemType = SeqItemType.Callback;
+            StartTime = startTime;
+            Callback = callback;
+            CallbackWParms = callbackWParms;
+            CallbackParms = callbackParms;
         }
     }
 }

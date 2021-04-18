@@ -31,7 +31,7 @@ public class PlugSetColor : ABSTweenPlugin
         get => StartVal;
         set
         {
-            if (TweenObj.isFrom && IsRelative)
+            if (TweenObj.IsFrom && IsRelative)
                 StartVal = _typedStartVal = _typedEndVal + (Color)value;
             else
                 StartVal = _typedStartVal = (Color)value;
@@ -85,7 +85,7 @@ public class PlugSetColor : ABSTweenPlugin
         target is Material;
 
     protected override void DoUpdate(float totElapsed) => SetValue(Color.Lerp(_typedStartVal, _typedEndVal,
-        Ease(totElapsed, 0.0f, _changeVal, Duration, TweenObj.easeOvershootOrAmplitude, TweenObj.easePeriod)));
+        Ease(totElapsed, 0.0f, _changeVal, Duration, TweenObj.EaseOvershootOrAmplitude, TweenObj.EasePeriod)));
 
     protected override float GetSpeedBasedDuration(float speed)
     {
@@ -98,7 +98,7 @@ public class PlugSetColor : ABSTweenPlugin
     protected override void SetChangeVal()
     {
         _changeVal = 1f;
-        if (IsRelative && !TweenObj.isFrom)
+        if (IsRelative && !TweenObj.IsFrom)
             _typedEndVal = _typedStartVal + _typedEndVal;
         _diffChangeVal = _typedEndVal - _typedStartVal;
     }
@@ -110,10 +110,10 @@ public class PlugSetColor : ABSTweenPlugin
     }
 
     protected override void SetValue(object value) =>
-        ((Material)TweenObj.target).SetColor(_colorName, (Color)value);
+        ((Material)TweenObj.Target).SetColor(_colorName, (Color)value);
 
     protected override object GetValue() =>
-        ((Material)TweenObj.target).GetColor(_colorName);
+        ((Material)TweenObj.Target).GetColor(_colorName);
 
     public enum ColorName
     {

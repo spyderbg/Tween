@@ -10,8 +10,10 @@ public static class TweenDelegate
 
     internal delegate void FilterFunc(int index, bool optionalBool);
 
+    // ReSharper disable once InconsistentNaming
     public delegate T HOFunc<out T>();
 
+    // ReSharper disable once InconsistentNaming
     public delegate void HOAction<in T>(T newValue);
 }
 

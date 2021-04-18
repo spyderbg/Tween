@@ -91,13 +91,13 @@ public abstract class ABSTweenPlugin
         TweenObj = tweenObj;
         PropName = propertyName;
         TargetType = targetType;
-        if (_easeType != EaseType.AnimationCurve && _easeInfo == null || TweenObj.speedBased ||
+        if (_easeType != EaseType.AnimationCurve && _easeInfo == null || TweenObj.SpeedBased ||
             _easeType == EaseType.AnimationCurve && _easeCurve == null)
             SetEase(easeType);
         Duration = TweenObj.Duration;
         if (TargetType == typeof(Transform))
         {
-            _transformTarget = tweenObj.target as Transform;
+            _transformTarget = tweenObj.Target as Transform;
             _useSpeedTransformAccessors = true;
             switch (PropName)
             {
@@ -149,7 +149,7 @@ public abstract class ABSTweenPlugin
     {
         if (WasStarted)
         {
-            TweenWarning.Log("Startup() for plugin " + this + " (target: " + TweenObj.target +
+            TweenWarning.Log("Startup() for plugin " + this + " (target: " + TweenObj.Target +
                              ") has already been called. Startup() won't execute twice.");
         }
         else
@@ -158,7 +158,7 @@ public abstract class ABSTweenPlugin
             object obj2 = null;
             if (onlyCalcSpeedBasedDur)
             {
-                if (TweenObj.speedBased && !_speedBasedDurationWasSet)
+                if (TweenObj.SpeedBased && !_speedBasedDurationWasSet)
                 {
                     obj1 = StartVal;
                     obj2 = EndVal;
@@ -167,7 +167,7 @@ public abstract class ABSTweenPlugin
             else
                 WasStarted = true;
 
-            if (TweenObj.isFrom)
+            if (TweenObj.IsFrom)
             {
                 var endVal = EndVal;
                 this.endVal = GetValue();
@@ -180,7 +180,7 @@ public abstract class ABSTweenPlugin
             }
 
             SetChangeVal();
-            if (!TweenObj.speedBased || _speedBasedDurationWasSet)
+            if (!TweenObj.SpeedBased || _speedBasedDurationWasSet)
                 return;
             Duration = GetSpeedBasedDuration(Duration);
             _speedBasedDurationWasSet = true;
@@ -202,12 +202,12 @@ public abstract class ABSTweenPlugin
 
     internal void Update(float totElapsed)
     {
-        if (TweenObj.loopType == LoopType.Incremental)
+        if (TweenObj.LoopType == LoopType.Incremental)
         {
-            if (_prevCompletedLoops != TweenObj.completedLoops)
+            if (_prevCompletedLoops != TweenObj.CompletedLoops)
             {
-                var completedLoops = TweenObj.completedLoops;
-                if (TweenObj._loops != -1 && completedLoops >= TweenObj._loops)
+                var completedLoops = TweenObj.CompletedLoops;
+                if (TweenObj.LoopsVal != -1 && completedLoops >= TweenObj.LoopsVal)
                     --completedLoops;
                 var diffIncr = completedLoops - _prevCompletedLoops;
                 if (diffIncr != 0)
@@ -247,9 +247,9 @@ public abstract class ABSTweenPlugin
         _easeType = easeType;
         if (_easeType == EaseType.AnimationCurve)
         {
-            if (TweenObj._easeAnimationCurve != null)
+            if (TweenObj.EaseAnimationCurveVal != null)
             {
-                _easeCurve = new EaseCurve(TweenObj._easeAnimationCurve);
+                _easeCurve = new EaseCurve(TweenObj.EaseAnimationCurveVal);
                 Ease = new TweenDelegate.EaseFunc(_easeCurve.Evaluate);
             }
             else
@@ -273,7 +273,7 @@ public abstract class ABSTweenPlugin
     protected abstract float GetSpeedBasedDuration(float speed);
 
     internal ABSTweenPlugin CloneBasic() =>
-        Activator.CreateInstance(GetType(), !(TweenObj is {isFrom: true}) ? EndVal : StartVal, _easeType, IsRelative) as ABSTweenPlugin;
+        Activator.CreateInstance(GetType(), !(TweenObj is {IsFrom: true}) ? EndVal : StartVal, _easeType, IsRelative) as ABSTweenPlugin;
 
     protected abstract void SetChangeVal();
 
@@ -297,30 +297,30 @@ public abstract class ABSTweenPlugin
             {
                 try
                 {
-                    _propInfo.SetValue(TweenObj.target, value, null);
+                    _propInfo.SetValue(TweenObj.Target, value, null);
                 }
                 catch (InvalidCastException ex)
                 {
-                    _propInfo.SetValue(TweenObj.target, (int)Math.Floor((float)value), null);
+                    _propInfo.SetValue(TweenObj.Target, (int)Math.Floor((float)value), null);
                 }
                 catch (ArgumentException ex)
                 {
-                    _propInfo.SetValue(TweenObj.target, (int)Math.Floor((float)value), null);
+                    _propInfo.SetValue(TweenObj.Target, (int)Math.Floor((float)value), null);
                 }
             }
             else
             {
                 try
                 {
-                    _fieldInfo.SetValue(TweenObj.target, value);
+                    _fieldInfo.SetValue(TweenObj.Target, value);
                 }
                 catch (InvalidCastException ex)
                 {
-                    _fieldInfo.SetValue(TweenObj.target, (int)Math.Floor((float)value));
+                    _fieldInfo.SetValue(TweenObj.Target, (int)Math.Floor((float)value));
                 }
                 catch (ArgumentException ex)
                 {
-                    _fieldInfo.SetValue(TweenObj.target, (int)Math.Floor((float)value));
+                    _fieldInfo.SetValue(TweenObj.Target, (int)Math.Floor((float)value));
                 }
             }
         }
@@ -328,15 +328,15 @@ public abstract class ABSTweenPlugin
         {
             try
             {
-                _valAccessor.Set(TweenObj.target, value);
+                _valAccessor.Set(TweenObj.Target, value);
             }
             catch (InvalidCastException ex)
             {
-                _valAccessor.Set(TweenObj.target, (int)Math.Floor((float)value));
+                _valAccessor.Set(TweenObj.Target, (int)Math.Floor((float)value));
             }
             catch (ArgumentException ex)
             {
-                _valAccessor.Set(TweenObj.target, (int)Math.Floor((float)value));
+                _valAccessor.Set(TweenObj.Target, (int)Math.Floor((float)value));
             }
         }
     }
@@ -346,10 +346,10 @@ public abstract class ABSTweenPlugin
         if (_useSpeedTransformAccessors)
             return _getTransformVector3?.Invoke() ?? (object)_getTransformQuaternion();
         if (!HOTween.IsIOS)
-            return _valAccessor.Get(TweenObj.target);
+            return _valAccessor.Get(TweenObj.Target);
         return _propInfo != null
-            ? _propInfo.GetGetMethod().Invoke(TweenObj.target, null)
-            : _fieldInfo.GetValue(TweenObj.target);
+            ? _propInfo.GetGetMethod().Invoke(TweenObj.Target, null)
+            : _fieldInfo.GetValue(TweenObj.Target);
     }
 }
 

@@ -8,22 +8,12 @@ namespace Holoville.HOTween.Core {
 
 public abstract class ABSTweenComponent : IHOTweenComponent
 {
-    internal string _id = "";
-    internal int _intId = -1;
-    internal bool _autoKillOnComplete = true;
-    internal bool _enabled = true;
-    internal float _timeScale = HOTween.kDefTimeScale;
-    internal int _loops = 1;
-    internal LoopType _loopType = HOTween.kDefLoopType;
-    internal UpdateType _updateType = HOTween.kDefUpdateType;
-    internal bool _isPaused;
+    internal int LoopsVal = 1;
 
-    internal bool ignoreCallbacks;
+    internal bool IgnoreCallbacksVal;
 
-    internal bool _steadyIgnoreCallbacks;
-
-    internal Sequence contSequence;
-    internal bool startupDone;
+    internal Sequence ContSequence;
+    internal bool StartupDone;
     internal TweenDelegate.TweenCallback onStart;
     internal TweenDelegate.TweenCallbackWParms onStartWParms;
     internal object[] onStartParms;
@@ -49,8 +39,6 @@ public abstract class ABSTweenComponent : IHOTweenComponent
     internal TweenDelegate.TweenCallbackWParms onCompleteWParms;
     internal object[] onCompleteParms;
 
-    protected int CompletedLoops;
-
     public float Duration { get; protected set; }
 
     public float FullDuration { get; protected set; }
@@ -59,21 +47,7 @@ public abstract class ABSTweenComponent : IHOTweenComponent
 
     protected float OriginalNonSpeedBasedDuration;
 
-    protected float Elapsed;
-
-    protected float FullElapsed;
-
     protected bool Destroyed;
-
-    protected bool IsEmpty = true;
-
-    protected bool IsReversed;
-
-    protected bool IsLoopingBack;
-
-    protected bool HasStarted;
-
-    protected bool IsComplete;
 
     protected float PrevFullElapsed;
 
@@ -93,89 +67,61 @@ public abstract class ABSTweenComponent : IHOTweenComponent
 
     internal bool[] ManagedBehavioursOriginalState;
 
-    internal bool[] managedGameObjectsOriginalState;
+    internal bool[] ManagedGameObjectsOriginalState;
 
-    internal virtual bool steadyIgnoreCallbacks
-    {
-        get => _steadyIgnoreCallbacks;
-        set => _steadyIgnoreCallbacks = value;
-    }
+    internal virtual bool SteadyIgnoreCallbacks { get; set; }
 
-    public string id
-    {
-        get => _id;
-        set => _id = value;
-    }
+    public string Id { get; set; } = "";
 
-    public int intId
-    {
-        get => _intId;
-        set => _intId = value;
-    }
+    public int IntId { get; set; } = -1;
 
-    public bool autoKillOnComplete
-    {
-        get => _autoKillOnComplete;
-        set => _autoKillOnComplete = value;
-    }
+    public bool AutoKillOnComplete { get; set; } = true;
 
-    public bool enabled
-    {
-        get => _enabled;
-        set => _enabled = value;
-    }
+    public bool Enabled { get; set; } = true;
 
-    public float timeScale
-    {
-        get => _timeScale;
-        set => _timeScale = value;
-    }
+    public float TimeScale { get; set; } = HOTween.kDefTimeScale;
 
-    public int loops
+    public int Loops
     {
-        get => _loops;
+        get => LoopsVal;
         set
         {
-            _loops = value;
+            LoopsVal = value;
             SetFullDuration();
         }
     }
 
-    public LoopType loopType
+    public LoopType LoopType { get; set; } = HOTween.kDefLoopType;
+
+    public float Position
     {
-        get => _loopType;
-        set => _loopType = value;
+        get => LoopsVal >= 1 ? FullElapsed : Elapsed;
+        set => GoTo(value, !IsPaused);
     }
 
-    public float position
-    {
-        get => _loops >= 1 ? FullElapsed : Elapsed;
-        set => GoTo(value, !_isPaused);
-    }
+    public float Elapsed { get; protected set; }
 
-    public float elapsed => Elapsed;
+    public float FullElapsed { get; protected set; }
 
-    public float fullElapsed => FullElapsed;
+    public UpdateType UpdateType { get; internal set; } = HOTween.kDefUpdateType;
 
-    public UpdateType updateType => _updateType;
-
-    public int completedLoops => CompletedLoops;
+    public int CompletedLoops { get; protected set; }
 
     public bool destroyed => Destroyed;
 
-    public bool isEmpty => IsEmpty;
+    public bool IsEmpty { get; protected set; } = true;
 
-    public bool isReversed => IsReversed;
+    public bool IsReversed { get; protected set; }
 
-    public bool isLoopingBack => IsLoopingBack;
+    public bool IsLoopingBack { get; protected set; }
 
-    public bool isPaused => _isPaused;
+    public bool IsPaused { get; internal set; }
 
-    public bool hasStarted => HasStarted;
+    public bool HasStarted { get; protected set; }
 
-    public bool isComplete => IsComplete;
+    public bool IsComplete { get; protected set; }
 
-    public bool isSequenced => contSequence != null;
+    public bool IsSequenced => ContSequence != null;
 
     public void Kill() => Kill(true);
 
@@ -191,22 +137,22 @@ public abstract class ABSTweenComponent : IHOTweenComponent
 
     public void Play()
     {
-        if (!_enabled)
+        if (!Enabled)
             return;
         PlayIfPaused();
     }
 
     private void PlayIfPaused()
     {
-        if (!_isPaused || (IsReversed || IsComplete) && (!IsReversed || FullElapsed <= 0.0))
+        if (!IsPaused || (IsReversed || IsComplete) && (!IsReversed || FullElapsed <= 0.0))
             return;
-        _isPaused = false;
+        IsPaused = false;
         OnPlay();
     }
 
     public void PlayForward()
     {
-        if (!_enabled)
+        if (!Enabled)
             return;
         IsReversed = false;
         PlayIfPaused();
@@ -214,7 +160,7 @@ public abstract class ABSTweenComponent : IHOTweenComponent
 
     public void PlayBackwards()
     {
-        if (!_enabled)
+        if (!Enabled)
             return;
         IsReversed = true;
         PlayIfPaused();
@@ -222,9 +168,9 @@ public abstract class ABSTweenComponent : IHOTweenComponent
 
     public void Pause()
     {
-        if (!_enabled || _isPaused)
+        if (!Enabled || IsPaused)
             return;
-        _isPaused = true;
+        IsPaused = true;
         OnPause();
     }
 
@@ -234,7 +180,7 @@ public abstract class ABSTweenComponent : IHOTweenComponent
 
     public void Reverse(bool forcePlay = false)
     {
-        if (!_enabled)
+        if (!Enabled)
             return;
         IsReversed = !IsReversed;
         if (!forcePlay)
@@ -274,21 +220,21 @@ public abstract class ABSTweenComponent : IHOTweenComponent
 
     protected virtual void Reset()
     {
-        _id = "";
-        _intId = -1;
-        _autoKillOnComplete = true;
-        _enabled = true;
-        _timeScale = HOTween.kDefTimeScale;
-        _loops = 1;
-        _loopType = HOTween.kDefLoopType;
-        _updateType = HOTween.kDefUpdateType;
-        _isPaused = false;
+        Id = "";
+        IntId = -1;
+        AutoKillOnComplete = true;
+        Enabled = true;
+        TimeScale = HOTween.kDefTimeScale;
+        LoopsVal = 1;
+        LoopType = HOTween.kDefLoopType;
+        UpdateType = HOTween.kDefUpdateType;
+        IsPaused = false;
         CompletedLoops = 0;
         Duration = OriginalDuration = OriginalNonSpeedBasedDuration = FullDuration = 0.0f;
         Elapsed = FullElapsed = 0.0f;
         IsEmpty = true;
         IsReversed = IsLoopingBack = HasStarted = IsComplete = false;
-        startupDone = false;
+        StartupDone = false;
         onStart = null;
         onStartWParms = null;
         onStartParms = null;
@@ -320,22 +266,18 @@ public abstract class ABSTweenComponent : IHOTweenComponent
         ManageGameObjects = false;
         ManagedGameObjectsOff = null;
         ManagedGameObjectsOn = null;
-        managedGameObjectsOriginalState = null;
+        ManagedGameObjectsOriginalState = null;
     }
 
     public void ApplyCallback(CallbackType callbackType, TweenDelegate.TweenCallback callback) =>
         ApplyCallback(false, callbackType, callback, null, null);
 
-    public void ApplyCallback(
-        CallbackType callbackType,
-        TweenDelegate.TweenCallbackWParms callback,
-        params object[] callbackParms)
+    public void ApplyCallback(CallbackType callbackType, TweenDelegate.TweenCallbackWParms callback, params object[] callbackParms)
     {
         ApplyCallback(true, callbackType, null, callback, callbackParms);
     }
 
-    public void ApplyCallback(CallbackType callbackType, GameObject sendMessageTarget, string methodName,
-        object value, SendMessageOptions options = SendMessageOptions.RequireReceiver)
+    public void ApplyCallback(CallbackType callbackType, GameObject sendMessageTarget, string methodName, object value, SendMessageOptions options = SendMessageOptions.RequireReceiver)
     {
         var callbackWParms = new TweenDelegate.TweenCallbackWParms(HOTween.DoSendMessage);
         var objArray = new object[4]
@@ -427,12 +369,12 @@ public abstract class ABSTweenComponent : IHOTweenComponent
 
     protected abstract bool GoTo(float time, bool play, bool forceUpdate, bool ignoreCallbacks);
 
-    protected virtual void Startup() => startupDone = true;
+    protected virtual void Startup() => StartupDone = true;
 
     protected virtual void OnStart()
     {
-        if (steadyIgnoreCallbacks || ignoreCallbacks)
-            return;
+        if (SteadyIgnoreCallbacks || IgnoreCallbacksVal) return;
+        
         HasStarted = true;
         if (onStart != null)
             onStart();
@@ -443,8 +385,8 @@ public abstract class ABSTweenComponent : IHOTweenComponent
 
     protected void OnUpdate()
     {
-        if (steadyIgnoreCallbacks || ignoreCallbacks)
-            return;
+        if (SteadyIgnoreCallbacks || IgnoreCallbacksVal) return;
+        
         if (onUpdate != null)
         {
             onUpdate();
@@ -459,8 +401,8 @@ public abstract class ABSTweenComponent : IHOTweenComponent
 
     protected void OnPluginUpdated(ABSTweenPlugin plugin)
     {
-        if (steadyIgnoreCallbacks || ignoreCallbacks)
-            return;
+        if (SteadyIgnoreCallbacks || IgnoreCallbacksVal) return;
+        
         if (onPluginUpdated != null)
         {
             onPluginUpdated();
@@ -475,8 +417,8 @@ public abstract class ABSTweenComponent : IHOTweenComponent
 
     protected void OnPause()
     {
-        if (steadyIgnoreCallbacks || ignoreCallbacks)
-            return;
+        if (SteadyIgnoreCallbacks || IgnoreCallbacksVal) return;
+        
         ManageObjects(false);
         if (onPause != null)
         {
@@ -492,8 +434,8 @@ public abstract class ABSTweenComponent : IHOTweenComponent
 
     protected virtual void OnPlay()
     {
-        if (steadyIgnoreCallbacks || ignoreCallbacks)
-            return;
+        if (SteadyIgnoreCallbacks || IgnoreCallbacksVal) return;
+        
         ManageObjects(true);
         if (onPlay != null)
         {
@@ -509,8 +451,8 @@ public abstract class ABSTweenComponent : IHOTweenComponent
 
     protected void OnRewinded()
     {
-        if (steadyIgnoreCallbacks || ignoreCallbacks)
-            return;
+        if (SteadyIgnoreCallbacks || IgnoreCallbacksVal) return;
+        
         if (onRewinded != null)
         {
             onRewinded();
@@ -525,8 +467,8 @@ public abstract class ABSTweenComponent : IHOTweenComponent
 
     protected void OnStepComplete()
     {
-        if (steadyIgnoreCallbacks || ignoreCallbacks)
-            return;
+        if (SteadyIgnoreCallbacks || IgnoreCallbacksVal) return;
+        
         if (onStepComplete != null)
         {
             onStepComplete();
@@ -543,7 +485,7 @@ public abstract class ABSTweenComponent : IHOTweenComponent
     {
         IsComplete = true;
         OnStepComplete();
-        if (steadyIgnoreCallbacks || ignoreCallbacks || onComplete == null && onCompleteWParms == null)
+        if (SteadyIgnoreCallbacks || IgnoreCallbacksVal || onComplete == null && onCompleteWParms == null)
             return;
         if (HOTween.isUpdateLoop)
             HOTween.OnCompletes.Add(this);
@@ -566,11 +508,11 @@ public abstract class ABSTweenComponent : IHOTweenComponent
     }
 
     protected void SetFullDuration() =>
-        FullDuration = _loops < 0 ? float.PositiveInfinity : Duration * _loops;
+        FullDuration = LoopsVal < 0 ? float.PositiveInfinity : Duration * LoopsVal;
 
     protected void SetElapsed()
     {
-        if (Duration == 0.0 || _loops >= 0 && CompletedLoops >= _loops)
+        if (Duration == 0.0 || LoopsVal >= 0 && CompletedLoops >= LoopsVal)
             Elapsed = Duration;
         else if (FullElapsed < (double)Duration)
             Elapsed = FullElapsed;
@@ -591,10 +533,10 @@ public abstract class ABSTweenComponent : IHOTweenComponent
             CompletedLoops = num2 - (double)num1 >= 1.0000000116861E-07 ? num2 - 1 : num2;
         }
 
-        IsLoopingBack = _loopType != LoopType.Restart && _loopType != LoopType.Incremental &&
-                        (_loops > 0 && (CompletedLoops < _loops && CompletedLoops % 2 != 0 ||
-                                        CompletedLoops >= _loops && CompletedLoops % 2 == 0) ||
-                         _loops < 0 && CompletedLoops % 2 != 0);
+        IsLoopingBack = LoopType != LoopType.Restart && LoopType != LoopType.Incremental &&
+                        (LoopsVal > 0 && (CompletedLoops < LoopsVal && CompletedLoops % 2 != 0 ||
+                                        CompletedLoops >= LoopsVal && CompletedLoops % 2 == 0) ||
+                         LoopsVal < 0 && CompletedLoops % 2 != 0);
     }
 
     protected void ManageObjects(bool isPlay)
@@ -653,11 +595,11 @@ public abstract class ABSTweenComponent : IHOTweenComponent
                 {
                     if (isPlay)
                     {
-                        managedGameObjectsOriginalState[index] = gameObject.active;
+                        ManagedGameObjectsOriginalState[index] = gameObject.active;
                         gameObject.active = true;
                     }
                     else
-                        gameObject.active = managedGameObjectsOriginalState[index];
+                        gameObject.active = ManagedGameObjectsOriginalState[index];
                 }
             }
         }
@@ -671,11 +613,11 @@ public abstract class ABSTweenComponent : IHOTweenComponent
             {
                 if (isPlay)
                 {
-                    managedGameObjectsOriginalState[num1 + index] = gameObject.active;
+                    ManagedGameObjectsOriginalState[num1 + index] = gameObject.active;
                     gameObject.active = false;
                 }
                 else
-                    gameObject.active = managedGameObjectsOriginalState[index + num1];
+                    gameObject.active = ManagedGameObjectsOriginalState[index + num1];
             }
         }
     }

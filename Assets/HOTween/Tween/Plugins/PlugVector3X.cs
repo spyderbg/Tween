@@ -29,7 +29,7 @@ public class PlugVector3X : ABSTweenPlugin
         get => StartVal;
         set
         {
-            if (TweenObj.isFrom)
+            if (TweenObj.IsFrom)
             {
                 if (IsRelative)
                     StartVal = TypedStartVal = TypedEndVal + Convert.ToSingle(value);
@@ -49,7 +49,7 @@ public class PlugVector3X : ABSTweenPlugin
         get => EndVal;
         set
         {
-            if (TweenObj.isFrom)
+            if (TweenObj.IsFrom)
             {
                 EndVal = value;
                 TypedEndVal = ((Vector3)EndVal).x;
@@ -108,7 +108,7 @@ public class PlugVector3X : ABSTweenPlugin
 
     protected override void SetChangeVal()
     {
-        if (IsRelative && !TweenObj.isFrom)
+        if (IsRelative && !TweenObj.IsFrom)
         {
             ChangeVal = TypedEndVal;
             endVal = (float)(TypedStartVal + (double)TypedEndVal);
@@ -122,9 +122,9 @@ public class PlugVector3X : ABSTweenPlugin
     protected override void DoUpdate(float totElapsed)
     {
         var vector3 = (Vector3)GetValue();
-        vector3.x = Ease(totElapsed, TypedStartVal, ChangeVal, Duration, TweenObj.easeOvershootOrAmplitude,
-            TweenObj.easePeriod);
-        if (TweenObj.pixelPerfect)
+        vector3.x = Ease(totElapsed, TypedStartVal, ChangeVal, Duration, TweenObj.EaseOvershootOrAmplitude,
+            TweenObj.EasePeriod);
+        if (TweenObj.PixelPerfect)
             vector3.x = (int)vector3.x;
         SetValue(vector3);
     }

@@ -28,7 +28,7 @@ namespace Holoville.HOTween.Plugins.Core
             get => StartVal;
             set
             {
-                if (TweenObj.isFrom && IsRelative)
+                if (TweenObj.IsFrom && IsRelative)
                     StartVal = typedStartVal = typedEndVal + (Vector4)value;
                 else
                     StartVal = typedStartVal = (Vector4)value;
@@ -128,7 +128,7 @@ namespace Holoville.HOTween.Plugins.Core
         /// </summary>
         protected override void SetChangeVal()
         {
-            if (IsRelative && !TweenObj.isFrom)
+            if (IsRelative && !TweenObj.IsFrom)
             {
                 changeVal = typedEndVal;
                 endVal = typedStartVal + typedEndVal;
@@ -150,7 +150,7 @@ namespace Holoville.HOTween.Plugins.Core
         /// <param name="totElapsed">The total elapsed time since startup.</param>
         protected override void DoUpdate(float totElapsed)
         {
-            var num = Ease(totElapsed, 0.0f, 1f, Duration, TweenObj.easeOvershootOrAmplitude, TweenObj.easePeriod);
+            var num = Ease(totElapsed, 0.0f, 1f, Duration, TweenObj.EaseOvershootOrAmplitude, TweenObj.EasePeriod);
             SetValue(new Vector4(typedStartVal.x + changeVal.x * num, typedStartVal.y + changeVal.y * num,
                 typedStartVal.z + changeVal.z * num, typedStartVal.w + changeVal.w * num));
         }

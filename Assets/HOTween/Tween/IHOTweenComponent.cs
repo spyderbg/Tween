@@ -3,6 +3,7 @@ using System.Collections;
 
 namespace Holoville.HOTween {
 
+// ReSharper disable once InconsistentNaming
 /// <summary>
 /// Public interface shared by <see cref="T:Holoville.HOTween.Tweener" /> and <see cref="T:Holoville.HOTween.Sequence" />.
 /// </summary>
@@ -13,7 +14,7 @@ public interface IHOTweenComponent
     /// (more than one tween can share the same ID, thus allowing for grouped operations).
     /// You can also use <c>intId</c> instead of <c>id</c> for faster operations.
     /// </summary>
-    string id { get; set; }
+    string Id { get; set; }
 
     /// <summary>
     /// Default is <c>-1</c>.
@@ -21,7 +22,7 @@ public interface IHOTweenComponent
     /// (more than one tween can share the same intId, thus allowing for grouped operations).
     /// The main difference from <c>id</c> is that while <c>id</c> is more legible, <c>intId</c> allows for faster operations.
     /// </summary>
-    int intId { get; set; }
+    int IntId { get; set; }
 
     /// <summary>
     /// Default is <c>true</c>.
@@ -29,7 +30,7 @@ public interface IHOTweenComponent
     /// (useful if you want to be able to control it independently with GoTo, instead than letting it run),
     /// and you will need to call an <c>HOTween.Kill</c> to remove this Tweener/Sequence.
     /// </summary>
-    bool autoKillOnComplete { get; set; }
+    bool AutoKillOnComplete { get; set; }
 
     /// <summary>
     /// Default is <c>true</c>.
@@ -37,27 +38,27 @@ public interface IHOTweenComponent
     /// and any use of animation methods (Play/Pause/Rewind/etc) will be ignored
     /// (both if called directly via this instance, than if using HOTween.Play/Pause/Rewind/etc.).
     /// </summary>
-    bool enabled { get; set; }
+    bool Enabled { get; set; }
 
     /// <summary>
     /// Time scale that will be used by this Tweener/Sequence.
     /// </summary>
-    float timeScale { get; set; }
+    float TimeScale { get; set; }
 
     /// <summary>
     /// Number of times the Tweener/Sequence will run (<c>-1</c> means the tween has infinite loops, <c>1</c> means the tween will run only once).
     /// </summary>
-    int loops { get; set; }
+    int Loops { get; set; }
 
     /// <summary>
     /// Type of loop for this Tweener/Sequence, in case <see cref="P:Holoville.HOTween.IHOTweenComponent.loops" /> is greater than 1 (or infinite).
     /// </summary>
-    LoopType loopType { get; set; }
+    LoopType LoopType { get; set; }
 
     /// <summary>
     /// Gets and sets the time position of the Tweener/Sequence (loops are included when not infinite, delay is not).
     /// </summary>
-    float position { get; set; }
+    float Position { get; set; }
 
     /// <summary>
     /// Duration of this Tweener/Sequence, loops and tween delay excluded.
@@ -74,56 +75,56 @@ public interface IHOTweenComponent
     /// Note that <c>elapsed</c> will be equal to <c>duration</c> only when all the loops are completed,
     /// otherwise each time a loop is completed, <c>completedLoops</c> is augmented by 1 and <c>elapsed</c> is reset to <c>0</c>.
     /// </summary>
-    float elapsed { get; }
+    float Elapsed { get; }
 
     /// <summary>
     /// Full elapsed time including loops (but without considering tween delay).
     /// </summary>
-    float fullElapsed { get; }
+    float FullElapsed { get; }
 
     /// <summary>The update type for this Tweener/Sequence.</summary>
-    UpdateType updateType { get; }
+    UpdateType UpdateType { get; }
 
     /// <summary>Number of loops that have been executed.</summary>
-    int completedLoops { get; }
+    int CompletedLoops { get; }
 
     /// <summary>
     /// Returns a value of <c>true</c> if this Tweener/Sequence contains no tweens
     /// (if this is a Tweener, it means that no valid property to tween was set;
     /// if this is a Sequence, it means no valid <see cref="T:Holoville.HOTween.Tweener" /> was added).
     /// </summary>
-    bool isEmpty { get; }
+    bool IsEmpty { get; }
 
     /// <summary>
     /// Returns a value of <c>true</c> if this Tweener/Sequence is set to go backwards (because of a call to <c>Reverse</c>.
     /// </summary>
-    bool isReversed { get; }
+    bool IsReversed { get; }
 
     /// <summary>
     /// Returns a value of <c>true</c> when this Tweener/Sequence is in the "going backwards" part of a Yoyo loop.
     /// </summary>
-    bool isLoopingBack { get; }
+    bool IsLoopingBack { get; }
 
     /// <summary>
     /// Returns a value of <c>true</c> if this Tweener/Sequence is paused.
     /// </summary>
-    bool isPaused { get; }
+    bool IsPaused { get; }
 
     /// <summary>
     /// Returns a value of <c>true</c> after this Tweener/Sequence was started the first time,
     /// or if a call to <c>GoTo</c> or <c>GoToAndPlay</c> was executed.
     /// </summary>
-    bool hasStarted { get; }
+    bool HasStarted { get; }
 
     /// <summary>
     /// Returns a value of <c>true</c> when this Tweener/Sequence is complete.
     /// </summary>
-    bool isComplete { get; }
+    bool IsComplete { get; }
 
     /// <summary>
     /// Returns a value of <c>true</c> if this Tweener/Sequence was added to a Sequence.
     /// </summary>
-    bool isSequenced { get; }
+    bool IsSequenced { get; }
 
     /// <summary>Kills this Tweener/Sequence.</summary>
     void Kill();
@@ -223,10 +224,7 @@ public interface IHOTweenComponent
     /// <param name="callback">The function to call, who must return <c>void</c> and accept no parameters.
     /// It must return <c>void</c> and has to accept a single parameter of type <see cref="T:Holoville.HOTween.TweenEvent" /></param>
     /// <param name="callbackParms">Additional comma separated parameters to pass to the function</param>
-    void ApplyCallback(
-        CallbackType callbackType,
-        TweenDelegate.TweenCallbackWParms callback,
-        params object[] callbackParms);
+    void ApplyCallback(CallbackType callbackType, TweenDelegate.TweenCallbackWParms callback, params object[] callbackParms);
 
     /// <summary>
     /// Returns <c>true</c> if the given target is currently involved in this Tweener/Sequence (taking into account also nested tweens).

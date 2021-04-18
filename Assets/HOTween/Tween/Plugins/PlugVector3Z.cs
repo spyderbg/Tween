@@ -12,7 +12,7 @@ public class PlugVector3Z : PlugVector3X
         get => StartVal;
         set
         {
-            if (TweenObj.isFrom)
+            if (TweenObj.IsFrom)
             {
                 if (IsRelative)
                     StartVal = TypedStartVal = TypedEndVal + Convert.ToSingle(value);
@@ -32,7 +32,7 @@ public class PlugVector3Z : PlugVector3X
         get => EndVal;
         set
         {
-            if (TweenObj.isFrom)
+            if (TweenObj.IsFrom)
             {
                 EndVal = value;
                 TypedEndVal = ((Vector3)EndVal).z;
@@ -84,9 +84,9 @@ public class PlugVector3Z : PlugVector3X
     protected override void DoUpdate(float totElapsed)
     {
         var vector3 = (Vector3)GetValue();
-        vector3.z = Ease(totElapsed, TypedStartVal, ChangeVal, Duration, TweenObj.easeOvershootOrAmplitude,
-            TweenObj.easePeriod);
-        if (TweenObj.pixelPerfect)
+        vector3.z = Ease(totElapsed, TypedStartVal, ChangeVal, Duration, TweenObj.EaseOvershootOrAmplitude,
+            TweenObj.EasePeriod);
+        if (TweenObj.PixelPerfect)
             vector3.z = (int)vector3.z;
         SetValue(vector3);
     }

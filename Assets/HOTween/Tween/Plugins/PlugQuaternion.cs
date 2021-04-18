@@ -26,7 +26,7 @@ public class PlugQuaternion : ABSTweenPlugin
         get => StartVal;
         set
         {
-            if (TweenObj.isFrom && IsRelative)
+            if (TweenObj.IsFrom && IsRelative)
             {
                 _typedStartVal = _typedEndVal +
                                 (value is Quaternion quaternion3 ? quaternion3.eulerAngles : (Vector3)value);
@@ -131,7 +131,7 @@ public class PlugQuaternion : ABSTweenPlugin
 
     protected override void SetChangeVal()
     {
-        if (IsRelative && !TweenObj.isFrom)
+        if (IsRelative && !TweenObj.IsFrom)
         {
             _changeVal = _typedEndVal;
             endVal = _typedStartVal + _typedEndVal;
@@ -167,7 +167,7 @@ public class PlugQuaternion : ABSTweenPlugin
 
     protected override void DoUpdate(float totElapsed)
     {
-        var num = Ease(totElapsed, 0.0f, 1f, Duration, TweenObj.easeOvershootOrAmplitude, TweenObj.easePeriod);
+        var num = Ease(totElapsed, 0.0f, 1f, Duration, TweenObj.EaseOvershootOrAmplitude, TweenObj.EasePeriod);
         SetValue(Quaternion.Euler(new Vector3(_typedStartVal.x + _changeVal.x * num,
             _typedStartVal.y + _changeVal.y * num, _typedStartVal.z + _changeVal.z * num)));
     }

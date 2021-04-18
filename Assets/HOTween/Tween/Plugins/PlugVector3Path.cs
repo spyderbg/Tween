@@ -50,7 +50,7 @@ public class PlugVector3Path : ABSTweenPlugin
         get => StartVal;
         set
         {
-            if (TweenObj.isFrom)
+            if (TweenObj.IsFrom)
             {
                 EndVal = value;
                 var vector3Array = (Vector3[])value;
@@ -68,7 +68,7 @@ public class PlugVector3Path : ABSTweenPlugin
         get => EndVal;
         set
         {
-            if (TweenObj.isFrom)
+            if (TweenObj.IsFrom)
             {
                 StartVal = _typedStartVal = (Vector3)value;
             }
@@ -114,10 +114,10 @@ public class PlugVector3Path : ABSTweenPlugin
 
     internal override void Init(Tweener tweenObj, string propertyName, EaseType easeType, Type targetType, PropertyInfo propertyInfo, FieldInfo fieldInfo)
     {
-        if (IsRelative && tweenObj.isFrom)
+        if (IsRelative && tweenObj.IsFrom)
         {
             IsRelative = false;
-            TweenWarning.Log("\"" + tweenObj.target + "." + propertyName +
+            TweenWarning.Log("\"" + tweenObj.Target + "." + propertyName +
                              "\": PlugVector3Path \"isRelative\" parameter is incompatible with HOTween.From. The tween will be treated as absolute.");
         }
 
@@ -192,7 +192,7 @@ public class PlugVector3Path : ABSTweenPlugin
     protected override void SetChangeVal()
     {
         if (_orientType != OrientType.None && _orientTrans == null)
-            _orientTrans = TweenObj.target as Transform;
+            _orientTrans = TweenObj.Target as Transform;
         var num1 = 1;
         var num2 = IsClosedPath ? 1 : 0;
         var length1 = _points.Length;
@@ -224,7 +224,7 @@ public class PlugVector3Path : ABSTweenPlugin
             {
                 HasAdditionalStartingP = true;
                 vector3Array = new Vector3[length1 + 3 + num2];
-                if (TweenObj.isFrom)
+                if (TweenObj.IsFrom)
                 {
                     vector3Array[vector3Array.Length - 2] = vector31;
                 }
@@ -289,7 +289,7 @@ public class PlugVector3Path : ABSTweenPlugin
 
     protected override void DoUpdate(float totElapsed)
     {
-        PathPerc = Ease(totElapsed, _startPerc, _changePerc, Duration, TweenObj.easeOvershootOrAmplitude, TweenObj.easePeriod);
+        PathPerc = Ease(totElapsed, _startPerc, _changePerc, Duration, TweenObj.EaseOvershootOrAmplitude, TweenObj.EasePeriod);
         var constPointOnPath = GetConstPointOnPath(PathPerc, true, Path, out var outWaypointIndex);
         SetValue(constPointOnPath);
         if (_orientType == OrientType.None || !(_orientTrans != null) || _orientTrans.Equals(null))

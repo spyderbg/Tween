@@ -122,7 +122,7 @@ public class HOTween : MonoBehaviour
         if (!_initialized)
             Init();
         var tweener = new Tweener(target, duration, parms);
-        if (tweener.isEmpty) return null;
+        if (tweener.IsEmpty) return null;
         
         AddTween(tweener);
         return tweener;
@@ -149,10 +149,10 @@ public class HOTween : MonoBehaviour
             Init();
         parms = parms.IsFrom();
         var tweener = new Tweener(target, duration, parms);
-        if (tweener.isEmpty) return null;
+        if (tweener.IsEmpty) return null;
         
         AddTween(tweener);
-        if (!tweener._isPaused)
+        if (!tweener.IsPaused)
             tweener.Update(0.0f, true, true, false, true);
         return tweener;
     }
@@ -179,7 +179,7 @@ public class HOTween : MonoBehaviour
             Init();
         parms.Ease(EaseType.EaseOutElastic, punchAmplitude, punchPeriod);
         var tweener = new Tweener(target, duration, parms);
-        if (tweener.isEmpty) return null;
+        if (tweener.IsEmpty) return null;
         
         AddTween(tweener);
         return tweener;
@@ -206,7 +206,7 @@ public class HOTween : MonoBehaviour
             Init();
         parms.Ease(EaseType.EaseOutElastic, shakeAmplitude, shakePeriod).IsFrom();
         var tweener = new Tweener(target, duration, parms);
-        if (tweener.isEmpty) return null;
+        if (tweener.IsEmpty) return null;
         
         AddTween(tweener);
         return tweener;
@@ -253,15 +253,15 @@ public class HOTween : MonoBehaviour
     {
         if (OverwriteManager == null) return;
         
-        OverwriteManager.enabled = true;
-        OverwriteManager.logWarnings = logWarnings;
+        OverwriteManager.IsEnabled = true;
+        OverwriteManager.IsLogWarnings = logWarnings;
     }
 
     public static void DisableOverwriteManager()
     {
         if (OverwriteManager == null) return;
         
-        OverwriteManager.enabled = false;
+        OverwriteManager.IsEnabled = false;
     }
 
     public static int Pause(object target) =>
@@ -506,7 +506,7 @@ public class HOTween : MonoBehaviour
         if (_tweens == null) return new List<IHOTweenComponent>(1);
         
         var hoTweenComponentList = new List<IHOTweenComponent>(_tweens.Count);
-        hoTweenComponentList.AddRange(_tweens.Where(tween => !tween.isPaused));
+        hoTweenComponentList.AddRange(_tweens.Where(tween => !tween.IsPaused));
         return hoTweenComponentList;
     }
 
@@ -515,7 +515,7 @@ public class HOTween : MonoBehaviour
         if (_tweens == null) return new List<IHOTweenComponent>(1);
 
         var hoTweenComponentList = new List<IHOTweenComponent>(_tweens.Count);
-        hoTweenComponentList.AddRange(_tweens.Where(tween => tween.isPaused));
+        hoTweenComponentList.AddRange(_tweens.Where(tween => tween.IsPaused));
         return hoTweenComponentList;
     }
 
@@ -530,7 +530,7 @@ public class HOTween : MonoBehaviour
             var tween = _tweens[index];
             if (includeNestedTweens)
                 hoTweenComponentList.AddRange(tween.GetTweensById(id));
-            else if (tween.id == id)
+            else if (tween.Id == id)
                 hoTweenComponentList.Add(tween);
         }
 
@@ -548,7 +548,7 @@ public class HOTween : MonoBehaviour
             var tween = _tweens[index];
             if (includeNestedTweens)
                 hoTweenComponentList.AddRange(tween.GetTweensByIntId(intId));
-            else if (tween.intId == intId)
+            else if (tween.IntId == intId)
                 hoTweenComponentList.Add(tween);
         }
 
@@ -566,7 +566,7 @@ public class HOTween : MonoBehaviour
             var tween = _tweens[index];
             if (tween is Tweener tweener2)
             {
-                if (tweener2.target == target)
+                if (tweener2.Target == target)
                     tweenerList.Add(tweener2);
             }
             else if (includeNestedTweens)
@@ -651,8 +651,8 @@ public class HOTween : MonoBehaviour
         for (var index = 0; index < count1; ++index)
         {
             var tween = _tweens[index];
-            if (tween.updateType == updateType && tween.Update(elapsed * tween.timeScale) &&
-                (tween.destroyed || tween.autoKillOnComplete))
+            if (tween.UpdateType == updateType && tween.Update(elapsed * tween.TimeScale) &&
+                (tween.destroyed || tween.AutoKillOnComplete))
             {
                 tween.Kill(false);
                 if (TweensToRemoveIndexes.IndexOf(index) == -1)
@@ -850,7 +850,7 @@ public class HOTween : MonoBehaviour
             case int num3:
                 for (var index = num2; index > -1; --index)
                 {
-                    if (_tweens[index].intId == num3)
+                    if (_tweens[index].IntId == num3)
                     {
                         operation(index, optionalBool);
                         ++num1;
@@ -858,11 +858,10 @@ public class HOTween : MonoBehaviour
                 }
                 break;
                 
-            case string _:
-                var str = (string)filter;
+            case string str:
                 for (var index = num2; index > -1; --index)
                 {
-                    if (_tweens[index].id == str)
+                    if (_tweens[index].Id == str)
                     {
                         operation(index, optionalBool);
                         ++num1;
@@ -870,8 +869,7 @@ public class HOTween : MonoBehaviour
                 }
                 break;
                 
-            case Tweener _:
-                var tweener = filter as Tweener;
+            case Tweener tweener:
                 for (var index = num2; index > -1; --index)
                 {
                     if (_tweens[index] == tweener)
@@ -882,8 +880,7 @@ public class HOTween : MonoBehaviour
                 }
                 break;
                 
-            case Sequence _:
-                var sequence = filter as Sequence;
+            case Sequence sequence:
                 for (var index = num2; index > -1; --index)
                 {
                     if (_tweens[index] == sequence)
@@ -897,7 +894,7 @@ public class HOTween : MonoBehaviour
             default:
                 for (var index = num2; index > -1; --index)
                 {
-                    if (_tweens[index] is Tweener tween2 && tween2.target == filter)
+                    if (_tweens[index] is Tweener tween2 && tween2.Target == filter)
                     {
                         operation(index, optionalBool);
                         ++num1;

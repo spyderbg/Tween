@@ -24,7 +24,7 @@ namespace Holoville.HOTween
         /// <param name="p_id">The ID for this Sequence.</param>
         public SequenceParms Id(string p_id)
         {
-            id = p_id;
+            base.Id = p_id;
             return this;
         }
 
@@ -36,7 +36,7 @@ namespace Holoville.HOTween
         /// <param name="p_intId">The int ID for this Tweener.</param>
         public SequenceParms IntId(int p_intId)
         {
-            intId = p_intId;
+            base.IntId = p_intId;
             return this;
         }
 
@@ -50,7 +50,7 @@ namespace Holoville.HOTween
         /// </param>
         public SequenceParms AutoKill(bool p_active)
         {
-            autoKillOnComplete = p_active;
+            AutoKillOnComplete = p_active;
             return this;
         }
 
@@ -60,7 +60,7 @@ namespace Holoville.HOTween
         /// <param name="p_updateType">The type of update to use.</param>
         public SequenceParms UpdateType(UpdateType p_updateType)
         {
-            updateType = p_updateType;
+            base.UpdateType = p_updateType;
             return this;
         }
 
@@ -70,7 +70,7 @@ namespace Holoville.HOTween
         /// <param name="p_timeScale">The time scale to use.</param>
         public SequenceParms TimeScale(float p_timeScale)
         {
-            timeScale = p_timeScale;
+            base.TimeScale = p_timeScale;
             return this;
         }
 
